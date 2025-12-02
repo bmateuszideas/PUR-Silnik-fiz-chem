@@ -61,3 +61,50 @@ def test_log_bundle_handles_missing_files() -> None:
     process = build_process_conditions_from_logs(log_dir)
     assert process.m_polyol == pytest.approx(1.0)
     assert 0.0 <= process.RH_ambient <= 1.0
+
+
+def test_build_process_conditions_prefers_meta_overrides(tmp_path: Path) -> None:
+    log_dir = tmp_path / "custom_log"
+    log_dir.mkdir(parents=True)
+    (log_dir / "meta.yaml").write_text(
+        """
+shot_id: TEST-1
+process:
+  T_mold_init_C: 55.0
+  mixing_eff: 0.7
+        """,
+        encoding="utf-8",
+    )
+    (log_dir / "process.yaml").write_text("{}\n", encoding="utf-8")
+
+    process = build_process_conditions_from_logs(log_dir)
+
+    assert process.T_mold_init_C == pytest.approx(55.0)
+    assert process.mixing_eff == pytest.approx(0.7)
+
+
+def test_build_dataset_falls_back_to_csv_when_parquet_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    output = TMP_ML_DIR / "features.parquet"
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    calls = {"parquet": 0, "csv": 0}
+
+    def _raise_import_error(*args, **kwargs):
+        calls["parquet"] += 1
+        raise ImportError("pyarrow not installed")
+
+    original_to_csv = pd.DataFrame.to_csv
+
+    def _track_csv(self, *args, **kwargs):
+        calls["csv"] += 1
+        return original_to_csv(self, *args, **kwargs)
+
+    monkeypatch.setattr(pd.DataFrame, "to_parquet", _raise_import_error)
+    monkeypatch.setattr(pd.DataFrame, "to_csv", _track_csv)
+
+    df, saved = build_dataset(SAMPLE_SIM, SAMPLE_LOG_DIR, output)
+
+    assert df is not None
+    assert saved.suffix == ".csv"
+    assert calls["parquet"] == 1
+    assert calls["csv"] == 1
