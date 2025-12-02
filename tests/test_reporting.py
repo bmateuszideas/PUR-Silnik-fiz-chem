@@ -29,3 +29,17 @@ def test_generate_report_and_plots() -> None:
     content = report_path.read_text(encoding="utf-8")
     assert "quality_status" in content
     assert "SYSTEM_R1" in content
+
+
+def test_generate_report_without_plots_or_metadata(tmp_path: Path) -> None:
+    from pur_mold_twin.reporting import generate_report
+
+    result = SimulationResult()
+    report_path = tmp_path / "report.md"
+
+    generated = generate_report(result, {}, report_path)
+
+    content = generated.read_text(encoding="utf-8")
+    assert generated.exists()
+    assert "PUR-MOLD-TWIN - Simulation Report" in content
+    assert "quality_status" in content
