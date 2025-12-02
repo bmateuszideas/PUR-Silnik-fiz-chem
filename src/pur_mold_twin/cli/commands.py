@@ -109,18 +109,28 @@ def run_sim(
 
     if report:
         try:
-            plot_dir = report.parent if report.suffix else report
+            report_path, plot_dir = _prepare_report_paths(report)
+        except OSError as exc:
+            LOGGER.error("Invalid report path %s: %s", report, exc)
+            typer.echo(f"Invalid report path '{report}': {exc}", err=True)
+            raise typer.Exit(1)
+
+        try:
             plot_dir.mkdir(parents=True, exist_ok=True)
-            plots = plot_profiles(result, plot_dir, prefix=report.stem or "report")
+            plots = plot_profiles(result, plot_dir, prefix=report_path.stem or "report")
             metadata = {
                 "scenario": str(scenario),
                 "system_id": system_id,
                 "backend": sim_config.backend,
             }
-            generate_report(result, plots, report, metadata=metadata)
-            typer.echo(f"Saved report to {report}")
+            generate_report(result, plots, report_path, metadata=metadata)
+            typer.echo(f"Saved report to {report_path}")
         except ImportError as exc:
             typer.echo(str(exc), err=True)
+            raise typer.Exit(1)
+        except OSError as exc:
+            LOGGER.exception("Failed to save report to %s: %s", report_path, exc)
+            typer.echo(f"Failed to save report to '{report_path}': {exc}", err=True)
             raise typer.Exit(1)
 
 
@@ -271,6 +281,23 @@ def _load_system(system_id: str, catalog_path: Path) -> MaterialSystem:
         )
         raise typer.Exit(1)
     return systems[system_id]
+
+
+def _prepare_report_paths(report: Path) -> tuple[Path, Path]:
+    """Validate report target and return (report_path, plot_dir)."""
+
+    if report.suffix:
+        report_path = report
+        plot_dir = report.parent
+    else:
+        report_path = report / "report.md"
+        plot_dir = report
+
+    for directory in {plot_dir, report_path.parent}:
+        if directory.exists() and not directory.is_dir():
+            raise OSError(f"Path '{directory}' is not a directory.")
+
+    return report_path, plot_dir
 
 
 def _emit_json(payload: dict, output: Optional[Path], *, echo: bool) -> None:
