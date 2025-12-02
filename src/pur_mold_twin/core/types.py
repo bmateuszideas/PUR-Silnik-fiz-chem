@@ -134,10 +134,16 @@ class SimulationConfig(BaseModel):
     hardness_density_gain: float = Field(0.45, ge=0.0)
     hardness_density_ref: float = Field(35.0, gt=0)
     hardness_24h_bonus: float = Field(4.0)
-    backend: Literal["manual", "solve_ivp"] = "manual"
+    backend: Literal["manual", "solve_ivp", "sundials", "jax"] = "manual"
     solve_ivp_method: str = "Radau"
     solve_ivp_rtol: float = Field(1e-6, gt=0)
     solve_ivp_atol: float = Field(1e-8, gt=0)
+    sundials_rtol: float = Field(1e-6, gt=0)
+    sundials_atol: float = Field(1e-8, gt=0)
+    sundials_max_steps: int = Field(500000, gt=0)
+    layers_count: int = Field(1, ge=1, description="Number of layers for 1D experimental mode")
+    foam_conductivity_W_per_mK: float = Field(0.2, ge=0.0)
+    dimension: Literal["0d", "1d_experimental"] = "0d"
 
     def steps(self) -> int:
         return int(self.total_time_s / self.time_step_s) + 1

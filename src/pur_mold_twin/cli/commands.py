@@ -23,6 +23,11 @@ from ..material_db.loader import load_material_catalog
 from ..material_db.models import MaterialSystem
 from ..optimizer import OptimizationConfig, ProcessOptimizer
 from ..reporting import generate_report, plot_profiles
+from ..data.sql_source import SQLProcessLogSource, load_sql_source_from_yaml
+from ..data.etl import build_log_bundles_from_source
+from ..logging.features import compute_basic_features
+from ..ml.inference import attach_ml_predictions
+from ..ml.drift import classify_drift, compute_drift
 from ..utils import get_logger
 
 
@@ -35,11 +40,18 @@ def register_commands(app: typer.Typer) -> None:
     app.command("run-sim")(run_sim)
     app.command("optimize")(optimize)
     app.command("build-features")(build_features_cli)
+    app.command("import-logs")(import_logs)
+    app.command("check-drift")(check_drift)
 
 
 class OutputFormat(str, Enum):
     JSON = "json"
     TABLE = "table"
+
+
+class RunMode(str, Enum):
+    EXPERT = "expert"
+    OPERATOR = "operator"
 
 
 def run_sim(
@@ -77,6 +89,16 @@ def run_sim(
         "--report",
         help="Optional path to save a Markdown report (plots saved alongside).",
     ),
+    with_ml: bool = typer.Option(
+        False,
+        "--with-ml",
+        help="Attach ML predictions (if models are available).",
+    ),
+    mode: RunMode = typer.Option(
+        RunMode.EXPERT,
+        "--mode",
+        help="Output mode: 'expert' (full JSON/table) or 'operator' (focused KPI view).",
+    ),
 ) -> None:
     """Run a single 0D simulation."""
 
@@ -97,6 +119,33 @@ def run_sim(
     result = simulator.run(material_system, scenario_data.process, scenario_data.mold, quality_targets)
 
     payload = result.to_dict()
+
+    if with_ml:
+        try:
+            features_df = compute_basic_features(
+                payload,
+                measured=None,
+                qc=None,
+                process={
+                    "T_polyol_in_C": scenario_data.process.T_polyol_in_C,
+                    "T_iso_in_C": scenario_data.process.T_iso_in_C,
+                    "T_mold_init_C": scenario_data.process.T_mold_init_C,
+                    "T_ambient_C": scenario_data.process.T_ambient_C,
+                    "RH_ambient": scenario_data.process.RH_ambient,
+                    "mixing_eff": scenario_data.process.mixing_eff,
+                },
+            )
+            features_row = dict(features_df.iloc[0])
+            payload = attach_ml_predictions(payload, features_row)
+        except Exception as exc:  # pragma: no cover
+            LOGGER.warning("ML predictions could not be attached: %s", exc)
+
+    if mode == RunMode.OPERATOR:
+        typer.echo(_format_kpi_table(result))
+        if save_json:
+            _emit_json(payload, save_json, echo=False)
+        return
+
     _emit_json(payload, save_json, echo=(output_format == OutputFormat.JSON))
 
     if output_format == OutputFormat.TABLE:
@@ -449,3 +498,120 @@ def _export_optimizer_history(result, path: Path) -> None:
                     entry.quality_status,
                 ]
             )
+
+
+def import_logs(
+    source_config: Path = typer.Option(
+        ...,
+        "--source",
+        "-s",
+        help="YAML config for SQL datasource (e.g. configs/datasources/sqlite_logs.yaml).",
+    ),
+    output_dir: Path = typer.Option(
+        Path("data/raw/sql"),
+        "--output-dir",
+        "-o",
+        help="Directory where normalized log folders will be written.",
+    ),
+    system_id: Optional[str] = typer.Option(
+        None,
+        "--system-id",
+        help="Optional system_id filter passed to the log source.",
+    ),
+) -> None:
+    """
+    Import process logs from an external datasource (SQL) and normalize them into
+    the local log directory format used by ETL/ML (meta.yaml, process.yaml, qc.yaml).
+    """
+
+    if not source_config.exists():
+        typer.echo(f"Source config '{source_config}' does not exist.", err=True)
+        raise typer.Exit(1)
+
+    try:
+        source: SQLProcessLogSource = load_sql_source_from_yaml(source_config)
+    except Exception as exc:  # pragma: no cover - config errors
+        LOGGER.error("Failed to load SQL source config: %s", exc)
+        typer.echo(f"Failed to load SQL source config: {exc}", err=True)
+        raise typer.Exit(1)
+
+    from ..data.interfaces import ProcessLogQuery  # local import to avoid cycles
+    from ruamel.yaml import YAML
+
+    query = ProcessLogQuery(system_id=system_id)
+    bundles = list(build_log_bundles_from_source(source, query))
+    if not bundles:
+        typer.echo("No logs returned from source.")
+        return
+
+    yaml = YAML()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    written = 0
+    for bundle in bundles:
+        shot_id = str(bundle.metadata.get("shot_id") or f"shot_{written+1}")
+        shot_dir = output_dir / shot_id
+        shot_dir.mkdir(parents=True, exist_ok=True)
+
+        meta = {
+            "shot_id": shot_id,
+            "system_id": bundle.metadata.get("system_id"),
+        }
+        with (shot_dir / "meta.yaml").open("w", encoding="utf-8") as handle:
+            yaml.dump(meta, handle)
+
+        with (shot_dir / "process.yaml").open("w", encoding="utf-8") as handle:
+            yaml.dump(bundle.process, handle)
+
+        with (shot_dir / "qc.yaml").open("w", encoding="utf-8") as handle:
+            yaml.dump(bundle.qc, handle)
+
+        written += 1
+
+    typer.echo(f"Imported {written} shots into {output_dir}")
+
+
+def check_drift(
+    baseline: Path = typer.Option(
+        ...,
+        "--baseline",
+        help="Baseline features parquet/CSV (reference period).",
+    ),
+    current: Path = typer.Option(
+        ...,
+        "--current",
+        help="Current features parquet/CSV (recent period).",
+    ),
+    warn_threshold: float = typer.Option(
+        0.1,
+        "--warn-threshold",
+        help="Absolute mean delta above which drift is WARNING.",
+    ),
+    alert_threshold: float = typer.Option(
+        0.2,
+        "--alert-threshold",
+        help="Absolute mean delta above which drift is ALERT.",
+    ),
+) -> None:
+    """
+    Check data drift between two feature datasets and exit with status:
+    0=OK, 1=WARNING, 2=ALERT.
+    """
+
+    try:
+        report = compute_drift(baseline, current)
+    except FileNotFoundError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1)
+
+    status = classify_drift(report, warn_threshold=warn_threshold, alert_threshold=alert_threshold)
+    typer.echo(f"Drift status: {status}")
+    typer.echo(f"max_abs_delta = {report.max_abs_delta:.4f}")
+    for m in report.metrics:
+        if m.abs_delta is None:
+            continue
+        typer.echo(f"{m.column}: baseline={m.baseline_mean:.4f}, current={m.current_mean:.4f}, delta={m.abs_delta:.4f}")
+
+    if status == "ALERT":
+        raise typer.Exit(2)
+    if status == "WARNING":
+        raise typer.Exit(1)

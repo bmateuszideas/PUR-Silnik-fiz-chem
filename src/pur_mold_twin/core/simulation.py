@@ -5,11 +5,6 @@ from typing import List, Optional, TYPE_CHECKING
 
 from ..material_db.models import MaterialSystem
 
-try:  # SciPy jest wymagana dla backendu solve_ivp, ale moze nie byc zainstalowana w trybie minimalnym
-    from scipy.integrate import solve_ivp
-except ModuleNotFoundError:  # pragma: no cover
-    solve_ivp = None
-
 from .gases import (
     compute_pressures,
     headspace_volume,
@@ -342,111 +337,11 @@ def step_gas_state(
     )
 
 
-def integrate_manual(ctx: SimulationContext) -> Trajectory:
-    cfg = ctx.config
-    time = linspace(0.0, cfg.total_time_s, cfg.steps())
-    alpha = zeros_like(time)
-    phi = zeros_like(time)
-    T_core = zeros_like(time)
-    T_mold = zeros_like(time)
-
-    T_core_current = initial_core_temperature(ctx.process)
-    T_mold_current = celsius_to_kelvin(ctx.process.T_mold_init_C)
-
-    alpha[0] = 0.0
-    T_core[0] = T_core_current
-    T_mold[0] = T_mold_current
-
-    for idx in range(1, len(time)):
-        dt = time[idx] - time[idx - 1]
-        kinetics = step_kinetics(ctx, alpha[idx - 1], phi[idx - 1], T_core_current, dt)
-        phi[idx] = kinetics.phi
-        alpha[idx] = kinetics.alpha
-
-        heat_release = cfg.reaction_enthalpy_J_per_kg * ctx.mass_total * kinetics.dalpha_dt
-        heat_transfer = step_heat_transfer(
-            ctx=ctx,
-            T_core_current=T_core_current,
-            T_mold_current=T_mold_current,
-            heat_release_W=heat_release,
-            dt=dt,
-        )
-
-        T_core_current = heat_transfer.T_core_K
-        T_mold_current = heat_transfer.T_mold_K
-        T_core[idx] = T_core_current
-        T_mold[idx] = T_mold_current
-
-    return Trajectory(time_s=time, alpha=alpha, T_core_K=T_core, T_mold_K=T_mold, phi=phi)
-
-
-def integrate_solve_ivp(ctx: SimulationContext) -> Trajectory:
-    if solve_ivp is None:  # pragma: no cover
-        raise RuntimeError("Backend 'solve_ivp' wymaga zainstalowanego pakietu scipy.")
-    cfg = ctx.config
-    time = linspace(0.0, cfg.total_time_s, cfg.steps())
-    y0 = [
-        0.0,
-        initial_core_temperature(ctx.process),
-        celsius_to_kelvin(ctx.process.T_mold_init_C),
-    ]
-
-    def ode(t, y):
-        phi_value, T_core_current, T_mold_current = y
-        arrhenius_factor = arrhenius_multiplier(
-            T_core_current,
-            cfg.reference_temperature_K,
-            cfg.activation_energy_J_per_mol,
-        )
-        dphi_dt = max(
-            (arrhenius_factor * (0.4 + 0.6 * ctx.mixing_factor)) / max(ctx.tau_s, 1e-3),
-            0.0,
-        )
-        dalpha_dt = alpha_derivative(phi_value, ctx.exponent, dphi_dt)
-        dalpha_dt = max(dalpha_dt, 0.0)
-        heat_release = cfg.reaction_enthalpy_J_per_kg * ctx.mass_total * dalpha_dt
-        heat_to_mold = (
-            ctx.mold.h_core_to_mold_W_per_m2K
-            * ctx.mold.mold_surface_area_m2
-            * (T_core_current - T_mold_current)
-        )
-        dT_core_dt = (heat_release - heat_to_mold) / max(ctx.mass_total * cfg.foam_cp_J_per_kgK, 1e-6)
-        dT_mold_dt = (
-            heat_to_mold
-            - ctx.mold.h_mold_to_ambient_W_per_m2K
-            * ctx.mold.mold_surface_area_m2
-            * (T_mold_current - ctx.T_ambient_K)
-        ) / max(ctx.mold.mold_mass_kg * ctx.mold.cp_mold_J_per_kgK, 1e-6)
-        return [dphi_dt, dT_core_dt, dT_mold_dt]
-
-    method = getattr(cfg, "solve_ivp_method", "Radau")
-    rtol = getattr(cfg, "solve_ivp_rtol", 1e-6)
-    atol = getattr(cfg, "solve_ivp_atol", 1e-8)
-    solution = solve_ivp(
-        ode,
-        (0.0, cfg.total_time_s),
-        y0,
-        method=method,
-        t_eval=time,
-        rtol=rtol,
-        atol=atol,
-    )
-    if not solution.success:
-        raise RuntimeError(f"solve_ivp backend failed: {solution.message}")
-
-    phi = [max(val, 0.0) for val in solution.y[0]]
-    alpha = [alpha_from_phi(val, ctx.exponent) for val in phi]
-    T_core = list(solution.y[1])
-    T_mold = list(solution.y[2])
-    return Trajectory(time_s=list(solution.t), alpha=alpha, T_core_K=T_core, T_mold_K=T_mold, phi=phi)
-
-
 def simulate(material, process, mold, quality, config, backend: str, vent_cfg) -> "SimulationResult":
+    from . import ode_backends
+
     ctx = prepare_context(material, process, mold, quality, config, vent_cfg=vent_cfg)
-    if backend == "solve_ivp":
-        trajectory = integrate_solve_ivp(ctx)
-    else:
-        trajectory = integrate_manual(ctx)
+    trajectory = ode_backends.integrate_system(ctx, backend=backend)
     return assemble_result(ctx, trajectory)
 
 
@@ -648,8 +543,3 @@ def evaluate_quality(
         status = "OK"
 
     return status, risk, diagnostics
-def get_backend_name(config: "SimulationConfig") -> str:
-    backend = getattr(config, "backend", "manual")
-    if backend not in {"manual", "solve_ivp"}:
-        raise ValueError(f"Unknown simulation backend '{backend}'.")
-    return backend

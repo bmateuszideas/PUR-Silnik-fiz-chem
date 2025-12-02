@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Optional
 
 from ..material_db.models import MaterialSystem
-from . import simulation
+from . import ode_backends, simulation, simulation_1d
 from .types import (
     MoldProperties,
     ProcessConditions,
@@ -52,6 +52,10 @@ class MVP0DSimulator:
             raise ValueError("Mold cavity volume must be > 0 m^3.")
 
         quality = quality or QualityTargets()
-        backend = simulation.get_backend_name(self.config)
+        backend = ode_backends.get_backend_name(self.config)
         vent_cfg = mold.vent or VentProperties()
+        if self.config.dimension == "1d_experimental":
+            ctx = simulation.prepare_context(material, process, mold, quality, self.config, vent_cfg)
+            trajectory = simulation_1d.run_1d_simulation(ctx)
+            return simulation.assemble_result(ctx, trajectory)
         return simulation.simulate(material, process, mold, quality, self.config, backend, vent_cfg)

@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Iterable, Optional
 
 import pandas as pd
 from ruamel.yaml import YAML
@@ -97,3 +97,15 @@ def build_process_conditions_from_logs(log_dir: Path) -> ProcessConditions:
     bundle = load_log_bundle(log_dir)
     data = {**DEFAULT_PROCESS_VALUES, **bundle.process}
     return ProcessConditions(**data)
+
+
+def build_log_bundles_from_source(source, query) -> Iterable[LogBundle]:
+    """
+    Adapter around ProcessLogSource-like objects.
+
+    The `source` is expected to implement `fetch_shots(query)` and return
+    LogBundle instances; this tiny helper exists to keep `etl.py` as the
+    central place wiring sources and downstream consumers.
+    """
+
+    return source.fetch_shots(query)
