@@ -1,3 +1,41 @@
+# ROADMAP TODO3 — Faza 3 (Advanced backends, Integracje, Produkt 1.0)
+
+Data startu: 2025-12-02
+
+## Cel biznesowy
+- Produktowy silnik Digital Twin PUR do pilotażu u klienta (1.0).
+- Wsparcie decyzji operatora i inżyniera: symulacja, optymalizacja, przewidywanie ryzyka.
+
+## Zakres techniczny (skrót)
+- Backend ODE: manual/solve_ivp/SUNDIALS/JAX + benchmarki i diagnostyka.
+- Pseudo-1D: wstępny model wielowarstwowy temperatury/konwersji.
+- Integracja danych: SQL/ETL/logi, build-features.
+- ML 2.0: train/inference/drift monitoring.
+- API/serwis: REST, operator mode, release/CI.
+
+## Aktualny stan
+- 0D stabilne, testy przechodzą; dodano `ode_backends` z diagnostyką.
+- Devcontainer i setup działają; branch `setup/devcontainer` aktywny.
+
+## Ograniczenia i ryzyka
+- Python>=3.14 docelowo; część extras (SUNDIALS/JAX) wymaga specyficznych środowisk.
+- 1D eksperymentalne: wymagana ostrożność numeryczna (stabilność, granice).
+
+## Segmenty prac
+1. Backend ODE i wydajność.
+2. Fizyka 1D (pseudo-1D).
+3. Integracja logów (SQL/ETL).
+4. ML 2.0 (train/inference/drift).
+5. API/serwis/operator.
+6. Release/CI.
+7. Pipeline E2E/drift/observability.
+
+## Kryteria DONE (1.0)
+- Spójny interfejs backendów + benchmarki i raport.
+- 1D eksperymentalny z testami regresyjnymi.
+- ETL+features+ML z raportami i CLI.
+- REST API referencyjne + smoke from-install.
+- CI release i podstawowe observability/drift.
 # ROADMAP TODO3 - PUR-MOLD-TWIN (Faza 3)
 
 Stan produktu na start TODO3 oraz kierunek dojscia do produktu 1.0. Dokument ma byc zbieznym punktem odniesienia dla kodu, README, TODO3 oraz dashboardu developerskiego.

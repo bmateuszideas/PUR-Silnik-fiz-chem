@@ -78,6 +78,15 @@ Plik musi zawierac co najmniej dwa scenariusze utrzymywane w zgodzie z API i zak
   - benchmarki (czas, liczba krokow, roznice w profilach) dokumentujemy w `docs/PERF_BACKENDS.md` oraz testujemy skryptami w `scripts/`.
 - Domyslny backend pozostaje stabilny i wspierany w CI; backendy eksperymentalne oznaczamy jako extras w `pyproject.toml` i sprawdzamy oddzielnie.
 
+### 7.1 Interfejs i diagnostyka
+- Wspólny interfejs: `integrate_system(ctx, backend="manual"|"solve_ivp"|"sundials"|"jax", **backend_kwargs) -> Trajectory`.
+- Diagnostyka: opcjonalny `diag_callback(event_name: str, payload: dict)` przekazywany w `backend_kwargs` i wywoływany przez backendy po zakończeniu pracy (np. `solve_ivp_complete`, `sundials_complete`, `jax_complete`).
+- Logowanie: każdy backend używa loggera modułowego i raportuje błędy/ostrzeżenia.
+
+### 7.2 Tolerancje i siatka czasu
+- Backend powinien preferencyjnie zwracać wyniki na siatce z `ctx.config` (`time_step_s`, `total_time_s`).
+- Jeśli solver zwróci inną siatkę, backend zapewnia spójność długości serii i raportuje różnice przez diagnostykę.
+
 ## 8. ETL vs konektory danych
 - Konektor (np. modul SQL/REST) jest odpowiedzialny za pobranie surowych danych z zewnetrznego systemu (baza, API, plik); ETL (`src/pur_mold_twin/data/etl.py`) jest odpowiedzialny za transformacje do wewnetrznych modeli (`ProcessConditions`, schema datasetu) i walidacje.
 - Zasady:
