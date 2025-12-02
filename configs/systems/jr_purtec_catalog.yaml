@@ -1,0 +1,396 @@
+---
+system_id: elastoflex_w_5165_149
+description: "BASF Elastoflex W 5165/149 – moulded flexible foam (seat cushions/backrests)"
+
+polyol:
+  name: "Elastoflex W 5165/149 - Polyol (A-component)"
+  oh_number_mgKOH_per_g: null
+  functionality: null
+  density_kg_per_m3: 1020
+  viscosity_mPa_s: null
+  water_fraction: null
+  pentane_fraction: null
+  cream_time_s: 11
+  gel_time_s: null
+  rise_time_s: 80
+  tack_free_time_s: null
+  metadata:
+    documents:
+      - "Elastoflex_W_5165-149_TDS_BASF_2017-06-06"
+    reference_temperature_C: 23
+    notes:
+      - "Czasy reakcji z cup test przy 23C."
+      - "Brak jawnego OH-number, water/pentane w TDS."
+      - "System 2K do seat cushions/backrests."
+
+isocyanate:
+  name: "ISO 135/144 - Isocyanate (B-component for Elastoflex W 5165/149)"
+  nco_percent: 27.3
+  functionality: null
+  density_kg_per_m3: 1160
+  viscosity_mPa_s: 180
+  metadata:
+    documents:
+      - "ISO_135-144_TDS_fragment_from_Elastoflex_W_5165-149"
+    reference_temperature_C: 25
+
+foam_targets:
+  rho_free_rise_target: 46
+  rho_moulded_target: 52
+
+mechanical_targets:
+  h_demold_target_shore: null
+  h_24h_target_shore: null
+
+metadata:
+  application:
+    description: "Moulded flexible polyurethane foam for seat cushions and backrests."
+    segment:
+      - office_seating
+      - general_seating
+      - JR_Purtec_like_flexible_moulded
+  processing_recommendations:
+    component_temp_C:
+      - 23
+      - 28
+    mould_temp_C:
+      - 40
+      - 50
+    storage_temp_polyol_C:
+      - 20
+      - 25
+    storage_temp_iso_C:
+      - 20
+      - 25
+    mixing_ratio_A_B_by_weight_cup_test:
+      - 100.0
+      - 74.0
+    mixing_ratio_A_B_by_weight_polymer_data:
+      - 100.0
+      - 78.0
+  source:
+    tds_url: "https://magpolkimya.com/files/Elastoflex%20W%205165-149%20TDS.pdf"
+---
+system_id: elastoflex_w_5165_150
+description: "BASF Elastoflex W 5165/150 – automotive seat foam"
+
+polyol:
+  name: "Elastoflex W 5165/150 - Polyol (A-component)"
+  oh_number_mgKOH_per_g: null
+  functionality: null
+  density_kg_per_m3: 1023
+  viscosity_mPa_s: 1150
+  water_fraction: null
+  pentane_fraction: null
+  cream_time_s: 14
+  gel_time_s: null
+  rise_time_s: 89
+  tack_free_time_s: null
+  metadata:
+    documents:
+      - "Elastoflex_W_5165-150_TDS_BASF_2019-09-17"
+    reference_temperature_C: 23
+    notes:
+      - "Cup test, ultrasonic start/rise times przy 23C."
+      - "Brak OH-number, water/pentane w TDS."
+
+isocyanate:
+  name: "ISO 135/144 - Isocyanate (B-component for Elastoflex W 5165/150)"
+  nco_percent: 27.1
+  functionality: null
+  density_kg_per_m3: 1160
+  viscosity_mPa_s: 180
+  metadata:
+    documents:
+      - "ISO_135-144_TDS_fragment_from_Elastoflex_W_5165-150"
+    reference_temperature_C: 25
+
+foam_targets:
+  rho_free_rise_target: 48
+  rho_moulded_target: null
+
+mechanical_targets:
+  h_demold_target_shore: null
+  h_24h_target_shore: null
+
+metadata:
+  application:
+    description: "Two-component polyurethane system for the production of automotive seats."
+    segment:
+      - automotive_seating
+      - JR_Purtec_like_automotive
+  processing_recommendations:
+    component_temp_C:
+      - 23
+      - 23
+    mould_temp_C: null
+    storage_temp_polyol_C: null
+    storage_temp_iso_C: null
+    mixing_ratio_A_B_by_weight_cup_test:
+      - 100.0
+      - 65.0
+  source:
+    tds_url: "https://magpolkimya.com/files/Elastoflex%20W%205165-150%20TDS%281%29.pdf"
+---
+system_id: dekolast_8if
+description: "Dekolast 8IF – integral skin foam (steering wheels, saddles, seats, arms)"
+
+polyol:
+  name: "Dekolast 8IF - Component A"
+  oh_number_mgKOH_per_g: null
+  functionality: null
+  density_kg_per_m3: null
+  viscosity_mPa_s: null
+  water_fraction: null
+  pentane_fraction: null
+  cream_time_s: null
+  gel_time_s: null
+  rise_time_s: null
+  tack_free_time_s: null
+  metadata:
+    documents:
+      - "Dekolast_8IF_web_datasheet_OSV"
+    reference_temperature_C: 20
+    reaction_times_s:
+      start_time_range:
+        - 20
+        - 40
+      rise_time_range:
+        - 45
+        - 65
+
+isocyanate:
+  name: "Dekolast 8IF - Component B (isocyanate)"
+  nco_percent: null
+  functionality: null
+  density_kg_per_m3: null
+  viscosity_mPa_s: null
+
+foam_targets:
+  rho_free_rise_target: null
+  rho_moulded_target: null
+
+mechanical_targets:
+  h_demold_target_shore: null
+  h_24h_target_shore: null
+
+metadata:
+  application:
+    description: "Two-component polyurethane integral skin foam for car steering wheels, bicycle saddles, seats, chair arms, air filters."
+    segment:
+      - automotive_steering_wheels
+      - seating_components
+      - furniture_parts
+      - JR_Purtec_like_integral_skin
+  processing_recommendations:
+    density_range_kg_per_m3:
+      - 350
+      - 800
+    component_ratio_A_B_by_weight:
+      - 2.5
+      - 1.0
+    suitable_moulds:
+      - open_moulds
+      - closed_moulds
+    processing:
+      - machine
+      - manual
+  source:
+    datasheet_page: "https://www.osv.com.ua/en/polimery/dekolast-8if/"
+---
+system_id: fasipol_integral_30_45
+description: "Fasipol Integral 30/45 – semi-rigid integral skin PU (vehicle parts, machinery components)"
+
+polyol:
+  name: "Fasipol Integral 30/45 - Component A"
+  oh_number_mgKOH_per_g: null
+  functionality: null
+  density_kg_per_m3: null
+  viscosity_mPa_s: null
+  water_fraction: null
+  pentane_fraction: null
+  cream_time_s: null
+  gel_time_s: null
+  rise_time_s: null
+  tack_free_time_s: null
+  metadata:
+    documents:
+      - "Fasipol_Integral_30-45_TDS_2025-05-23"
+    reference_temperature_C: 23
+
+isocyanate:
+  name: "Fasipol Integral 30/45 - Component B (isocyanate)"
+  nco_percent: null
+  functionality: null
+  density_kg_per_m3: null
+  viscosity_mPa_s: null
+
+foam_targets:
+  rho_free_rise_target: null
+  rho_moulded_target: 350
+
+mechanical_targets:
+  h_demold_target_shore: null
+  h_24h_target_shore: null
+
+metadata:
+  application:
+    description: "Integral skin semi-rigid polyurethane system, HCFC-free (ODP=0), for furniture accessories, vehicle parts, industrial machinery components."
+    segment:
+      - vehicle_parts
+      - technical_furniture
+      - JR_Purtec_like_integral_skin
+  foam_properties:
+    density_core_kg_per_m3: 240
+    density_skin_kg_per_m3: 710
+    density_overall_kg_per_m3: 350
+    tensile_strength_core_kg_per_cm2: 10
+    tensile_strength_skin_kg_per_cm2: 70
+    elongation_core_percent: 120
+    elongation_skin_percent: 130
+    tear_resistance_kg_per_cm2: 13
+    hardness_shore_A_range:
+      - 30
+      - 45
+  processing_recommendations:
+    molding_thickness_notes: "System mouldable at variable thicknesses (no explicit times/temps in TDS)."
+  source:
+    tds_url: "https://www.fasipol.it/images/Integrale_30-45-ENG.pdf"
+---
+system_id: fasipol_integral_75_85
+description: "Fasipol Integral 75/85 – semi-rigid integral skin PU (transport vehicle parts)"
+
+polyol:
+  name: "Fasipol Integral 75/85 - Component A"
+  oh_number_mgKOH_per_g: null
+  functionality: null
+  density_kg_per_m3: null
+  viscosity_mPa_s: null
+  water_fraction: null
+  pentane_fraction: null
+  cream_time_s: null
+  gel_time_s: null
+  rise_time_s: null
+  tack_free_time_s: null
+  metadata:
+    documents:
+      - "Fasipol_Integral_75-85_TDS_2025-05-23"
+    reference_temperature_C: 23
+
+isocyanate:
+  name: "Fasipol Integral 75/85 - Component B (isocyanate)"
+  nco_percent: null
+  functionality: null
+  density_kg_per_m3: null
+  viscosity_mPa_s: null
+
+foam_targets:
+  rho_free_rise_target: null
+  rho_moulded_target: 400
+
+mechanical_targets:
+  h_demold_target_shore: null
+  h_24h_target_shore: null
+
+metadata:
+  application:
+    description: "Integral skin semi-rigid polyurethane system (ODP=0) for technical furnishing components and parts for public and private transport vehicles."
+    segment:
+      - public_transport_components
+      - vehicle_interior_parts
+      - JR_Purtec_like_integral_skin
+  foam_properties:
+    density_core_kg_per_m3: 330
+    density_skin_kg_per_m3: 800
+    density_overall_kg_per_m3: 400
+    tensile_strength_core_kg_per_cm2: 24
+    tensile_strength_skin_kg_per_cm2: 95
+    elongation_core_percent: 170
+    elongation_skin_percent: 180
+    hardness_shore_A_range:
+      - 75
+      - 85
+    hardness_shore_D_range:
+      - 25
+      - 45
+  processing_recommendations:
+    molding_density_range_kg_per_m3:
+      - 300
+      - 500
+    notes: "System przeznaczony do elementów transportowych, lakierowanie w formie, dobra odporność UV/ścieranie."
+  source:
+    tds_url: "https://www.fasipol.it/images/Integrale_75-85-ENG.pdf"
+---
+system_id: SYSTEM_R1
+description: "Rigid reference system without pentane, molded density ~40 kg/m3. Matches Use Case 1."
+
+polyol:
+  name: POLYOL-R1
+  oh_number_mgKOH_per_g: 250.0
+  functionality: 3.0
+  density_kg_per_m3: 1030.0
+  viscosity_mPa_s: 950.0
+  water_fraction: 0.015
+  pentane_fraction: 0.0
+  cream_time_s: 15.0
+  gel_time_s: 60.0
+  rise_time_s: 110.0
+  tack_free_time_s: 150.0
+
+isocyanate:
+  name: ISO-31
+  nco_percent: 31.0
+  functionality: 2.7
+  density_kg_per_m3: 1230.0
+  viscosity_mPa_s: 200.0
+
+foam_targets:
+  rho_free_rise_target: 30.0
+  rho_moulded_target: 40.0
+
+mechanical_targets:
+  h_demold_target_shore: 43.0
+  h_24h_target_shore: 55.0
+
+metadata:
+  vendor: Internal reference
+  documents:
+    - README Use Case 1
+  notes: "Derived from reference data (system without pentane)."
+---
+system_id: SYSTEM_M1
+description: "Pentane-rich rigid system for problematic settings (Use Case 2). Higher CO2/pentane load."
+
+polyol:
+  name: POLYOL-M1
+  oh_number_mgKOH_per_g: 250.0
+  functionality: 3.0
+  density_kg_per_m3: 1015.0
+  viscosity_mPa_s: 1100.0
+  water_fraction: 0.02
+  pentane_fraction: 0.10
+  cream_time_s: 18.0
+  gel_time_s: 70.0
+  rise_time_s: 130.0
+  tack_free_time_s: 180.0
+
+isocyanate:
+  name: ISO-31
+  nco_percent: 31.0
+  functionality: 2.7
+  density_kg_per_m3: 1230.0
+  viscosity_mPa_s: 200.0
+
+foam_targets:
+  rho_free_rise_target: 30.0
+  rho_moulded_target: 40.0
+
+mechanical_targets:
+  h_demold_target_shore: 36.0
+  h_24h_target_shore: 55.0
+
+metadata:
+  vendor: Internal reference
+  documents:
+    - README Use Case 2
+  notes: "Combines higher RH sensitivity with pentane-driven expansion; for pressure model calibration."
