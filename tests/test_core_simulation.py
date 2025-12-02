@@ -16,7 +16,14 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     SCIPY_AVAILABLE = False
 
-from pur_mold_twin import MVP0DSimulator, MoldProperties, ProcessConditions, QualityTargets, SimulationConfig
+from pur_mold_twin import (
+    MVP0DSimulator,
+    MoldProperties,
+    ProcessConditions,
+    QualityTargets,
+    SimulationConfig,
+    VentProperties,
+)
 from pur_mold_twin.material_db.loader import load_material_catalog
 
 
@@ -116,6 +123,18 @@ def test_water_risk_increases_with_humidity() -> None:
     assert humid_result.water_from_polyol_kg == dry_result.water_from_polyol_kg
 
 
+def test_high_humidity_raises_pressure_and_defect_risk() -> None:
+    simulator = MVP0DSimulator()
+    mold = _build_mold(_build_process())
+
+    baseline = simulator.run(SYSTEM_R1, _build_process(RH_ambient=0.5), mold, TEST_QUALITY)
+    saturated = simulator.run(SYSTEM_R1, _build_process(RH_ambient=1.0), mold, TEST_QUALITY)
+
+    assert saturated.p_max_Pa > baseline.p_max_Pa
+    assert saturated.defect_risk >= baseline.defect_risk
+    assert saturated.water_risk_score > baseline.water_risk_score
+
+
 def test_matches_golden_profile():
     fixture_path = Path("tests/fixtures/use_case_1_output.json")
     import json
@@ -153,6 +172,26 @@ def test_extreme_vent_closure():
     )
     result = simulator.run(SYSTEM_R1, process, mold, TEST_QUALITY)
     assert result.p_max_Pa > 0
+
+
+def test_vent_parameters_clamp_efficiency_and_pressure():
+    simulator = MVP0DSimulator()
+    process = _build_process()
+    base_mold = _build_mold(process)
+
+    baseline = simulator.run(SYSTEM_R1, process, base_mold, TEST_QUALITY)
+    aggressive_vent = VentProperties(
+        alpha_closure=0.05,
+        clog_rate=10.0,
+        min_efficiency=0.1,
+        base_conductance_m3_per_sPa=1e-7,
+        count=1,
+    )
+    clogged_mold = base_mold.model_copy(update={"vent": aggressive_vent})
+    clogged = simulator.run(SYSTEM_R1, process, clogged_mold, TEST_QUALITY)
+
+    assert min(clogged.vent_eff) == pytest.approx(aggressive_vent.min_efficiency, rel=0, abs=1e-9)
+    assert clogged.p_max_Pa > baseline.p_max_Pa
 
 
 def test_extreme_cold_mold_and_high_rh():

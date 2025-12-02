@@ -191,3 +191,9 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
   ```
   - Flagi: `--samples/-n`, `--seed`, `--t-cycle-max`, `--prefer-lower-pressure`, `--systems`, `--quality`, `--output {json|table}`, `--save-json`, `--export-csv`, `--verbose`.
 - Szczegoly dot. formatow wyjscia oraz przeplywu YAML -> Material DB -> core opisane sa w `docs/USE_CASES.md`.
+
+## Tests / Usage
+
+- Zainstaluj zaleznosci developerskie: `python3.14 -m pip install .[dev]` (zawiera `pytest`, `pytest-cov`, linty). Bazowy pakiet instalowany bez extras ma biblioteki CLI (`typer`, `ruamel.yaml`, `pydantic`, `matplotlib`) wymagane do `--report`.
+- Uruchom kluczowe testy regresyjne: `PYTHONPATH=src python3.14 -m pytest tests/test_core_simulation.py tests/test_optimizer.py tests/test_cli.py`.
+- Pelny zestaw wraz z pokryciem: `PYTHONPATH=src python3.14 -m pytest` (ustawienie `PYTHONPATH` nie jest potrzebne po instalacji pakietu poprzez `pip`).
