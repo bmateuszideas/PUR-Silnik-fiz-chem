@@ -16,7 +16,8 @@ from pur_mold_twin import (
 )
 from pur_mold_twin.configs import load_process_scenario
 from pur_mold_twin.material_db.loader import load_material_catalog
-from pur_mold_twin.optimizer.constraints import evaluate_constraints
+from pur_mold_twin.optimizer.search import OptimizationCandidate
+from pur_mold_twin.optimizer.constraints import ConstraintReport, evaluate_constraints
 
 
 CATALOG = Path("configs/systems/jr_purtec_catalog.yaml")
@@ -91,3 +92,70 @@ def test_constraints_detect_overtime_demold() -> None:
 
     assert not constraints.feasible
     assert any("exceeds cycle limit" in msg or "beyond simulated horizon" in msg for msg in constraints.violations)
+
+
+def test_objective_penalizes_pressure_when_preferred() -> None:
+    scenario, system = _scenario_bundle()
+    optimizer = ProcessOptimizer(MVP0DSimulator(scenario.simulation))
+    relaxed_quality = scenario.quality.model_copy(
+        update={"p_max_allowable_bar": 10.0, "defect_risk_max": 1.0}
+    )
+
+    low_pressure_result = optimizer.simulator.run(
+        system, scenario.process, scenario.mold, relaxed_quality
+    )
+    high_pressure_process = scenario.process.model_copy(update={"RH_ambient": 1.0})
+    high_pressure_result = optimizer.simulator.run(
+        system, high_pressure_process, scenario.mold, relaxed_quality
+    )
+
+    assert high_pressure_result.p_max_Pa > low_pressure_result.p_max_Pa
+
+    candidate_time = (
+        low_pressure_result.t_demold_opt_s
+        or low_pressure_result.t_demold_min_s
+        or 300.0
+    )
+    dummy_constraints = ConstraintReport(
+        feasible=True,
+        violations=[],
+        penalty=0.0,
+        window_ok=True,
+        demold_time_s=candidate_time,
+        demold_window=(candidate_time - 5.0, candidate_time + 5.0),
+    )
+
+    base_candidate = OptimizationCandidate(
+        T_polyol_in_C=high_pressure_process.T_polyol_in_C,
+        T_iso_in_C=high_pressure_process.T_iso_in_C,
+        T_mold_init_C=high_pressure_process.T_mold_init_C,
+        t_demold_s=candidate_time,
+    )
+
+    low_objective = optimizer._objective_value(
+        candidate=base_candidate,
+        result=low_pressure_result,
+        constraints=dummy_constraints,
+        prefer_lower_pressure=True,
+    )
+    high_objective = optimizer._objective_value(
+        candidate=base_candidate,
+        result=high_pressure_result,
+        constraints=dummy_constraints,
+        prefer_lower_pressure=True,
+    )
+
+    assert high_objective > low_objective
+
+    no_pressure_bias = optimizer._objective_value(
+        candidate=base_candidate,
+        result=high_pressure_result,
+        constraints=dummy_constraints,
+        prefer_lower_pressure=False,
+    )
+    assert no_pressure_bias == optimizer._objective_value(
+        candidate=base_candidate,
+        result=low_pressure_result,
+        constraints=dummy_constraints,
+        prefer_lower_pressure=False,
+    )

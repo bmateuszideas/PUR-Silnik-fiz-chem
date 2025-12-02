@@ -10,6 +10,7 @@ sys.path.append(str(Path(".") / "src"))
 try:
     import pydantic  # noqa: F401
     import ruamel.yaml  # noqa: F401
+    import matplotlib  # noqa: F401
 
     CLI_DEPS_AVAILABLE = True
 except ModuleNotFoundError:  # pragma: no cover
@@ -105,6 +106,27 @@ def test_run_sim_cli_invalid_report_path(tmp_path):
 
     assert result.exit_code == 1
     assert "Invalid report path" in result.stderr
+
+
+@pytest.mark.skipif(not CLI_DEPS_AVAILABLE, reason="CLI deps (pydantic/ruamel/matplotlib) not installed")
+def test_run_sim_cli_generates_report(tmp_path):
+    report_path = tmp_path / "reports" / "use_case.md"
+    result = runner.invoke(
+        app,
+        [
+            "run-sim",
+            "--scenario",
+            "configs/scenarios/use_case_1.yaml",
+            "--report",
+            str(report_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert report_path.exists()
+    plots = list(report_path.parent.glob("*.png"))
+    assert plots
+    assert "Saved report" in result.stdout
 
 
 @pytest.mark.skipif(not CLI_DEPS_AVAILABLE, reason="CLI deps (pydantic/ruamel) not installed")

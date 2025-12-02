@@ -484,7 +484,7 @@ def assemble_result(ctx: SimulationContext, trajectory: Trajectory) -> "Simulati
 
     headspace0 = headspace_volume(cfg, ctx.cavity_volume, min(ctx.effective_liquid_volume, ctx.cavity_volume))
     p_air0, p_co20, p_pentane0, p_total0 = compute_pressures(
-        n_air=n_air,
+        n_air=ctx.n_air_initial,
         n_co2=0.0,
         n_pentane=0.0,
         temperature_K=trajectory.T_core_K[0],
