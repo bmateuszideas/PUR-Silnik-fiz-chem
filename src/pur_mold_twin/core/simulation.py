@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, TYPE_CHECKING
 
-import math
-
 from ..material_db.models import MaterialSystem
 
 try:  # SciPy jest wymagana dla backendu solve_ivp, ale moze nie byc zainstalowana w trybie minimalnym
@@ -95,6 +93,44 @@ class Trajectory:
     phi: List[float]
 
 
+@dataclass
+class KineticsStep:
+    phi: float
+    alpha: float
+    dalpha_dt: float
+    rate_modifier: float
+
+
+@dataclass
+class HeatTransferStep:
+    T_core_K: float
+    T_mold_K: float
+    dT_core_dt: float
+    dT_mold_dt: float
+    heat_to_mold_W: float
+
+
+@dataclass
+class GasState:
+    n_air: float
+    n_co2: float
+    n_pentane_liquid: float
+    n_pentane_gas: float
+
+
+@dataclass
+class GasStepResult:
+    state: GasState
+    fill_ratio: float
+    density: float
+    p_air_Pa: float
+    p_co2_Pa: float
+    p_pentane_Pa: float
+    p_total_Pa: float
+    vent_eff: float
+    vent_closed: bool
+
+
 def prepare_context(
     material: "MaterialSystem",
     process: "ProcessConditions",
@@ -143,6 +179,169 @@ def prepare_context(
     )
 
 
+def step_kinetics(ctx: SimulationContext, alpha_prev: float, phi_prev: float, T_core_current: float, dt: float) -> KineticsStep:
+    arrhenius_factor = arrhenius_multiplier(
+        T_core_current,
+        ctx.config.reference_temperature_K,
+        ctx.config.activation_energy_J_per_mol,
+    )
+    rate_modifier = arrhenius_factor * (0.4 + 0.6 * ctx.mixing_factor)
+    phi_value = max(
+        phi_prev + (dt * rate_modifier) / max(ctx.tau_s, 1e-3),
+        0.0,
+    )
+    alpha_value = alpha_from_phi(phi_value, ctx.exponent)
+    dalpha_dt = max(0.0, (alpha_value - alpha_prev) / max(dt, 1e-9))
+    return KineticsStep(
+        phi=phi_value,
+        alpha=alpha_value,
+        dalpha_dt=dalpha_dt,
+        rate_modifier=rate_modifier,
+    )
+
+
+def step_heat_transfer(
+    ctx: SimulationContext,
+    T_core_current: float,
+    T_mold_current: float,
+    heat_release_W: float,
+    dt: float,
+) -> HeatTransferStep:
+    heat_to_mold = (
+        ctx.mold.h_core_to_mold_W_per_m2K
+        * ctx.mold.mold_surface_area_m2
+        * (T_core_current - T_mold_current)
+    )
+    dT_core_dt = (
+        heat_release_W - heat_to_mold
+    ) / max(ctx.mass_total * ctx.config.foam_cp_J_per_kgK, 1e-6)
+    dT_mold_dt = (
+        heat_to_mold
+        - ctx.mold.h_mold_to_ambient_W_per_m2K
+        * ctx.mold.mold_surface_area_m2
+        * (T_mold_current - ctx.T_ambient_K)
+    ) / max(ctx.mold.mold_mass_kg * ctx.mold.cp_mold_J_per_kgK, 1e-6)
+    return HeatTransferStep(
+        T_core_K=T_core_current + dT_core_dt * dt,
+        T_mold_K=T_mold_current + dT_mold_dt * dt,
+        dT_core_dt=dT_core_dt,
+        dT_mold_dt=dT_mold_dt,
+        heat_to_mold_W=heat_to_mold,
+    )
+
+
+def step_gas_state(
+    ctx: SimulationContext,
+    vent_cfg: "VentProperties",
+    state: GasState,
+    alpha_value: float,
+    T_core_value: float,
+    dt: float,
+) -> GasStepResult:
+    cfg = ctx.config
+    target_co2 = min(
+        ctx.moles_co2_total,
+        ctx.moles_co2_total * (alpha_value ** 1.1) * ctx.gas_release_eff,
+    )
+    delta_co2 = max(0.0, target_co2 - state.n_co2)
+    n_co2_current = state.n_co2 + delta_co2
+
+    evap_rate = pentane_evap_rate(T_core_value, cfg)
+    delta_pentane = min(state.n_pentane_liquid, evap_rate * state.n_pentane_liquid * dt)
+    n_pentane_liquid = state.n_pentane_liquid - delta_pentane
+    n_pentane_gas = state.n_pentane_gas + delta_pentane
+
+    gas_volume_candidate = (
+        (n_co2_current + n_pentane_gas)
+        * GAS_CONSTANT
+        * T_core_value
+        / STANDARD_PRESSURE_PA
+    )
+    total_volume_candidate = ctx.effective_liquid_volume + gas_volume_candidate
+    effective_volume_candidate = min(total_volume_candidate, ctx.cavity_volume)
+    fill_ratio_candidate = clamp(
+        total_volume_candidate / max(ctx.cavity_volume, 1e-12),
+        0.0,
+        1.5,
+    )
+
+    headspace = headspace_volume(cfg, ctx.cavity_volume, effective_volume_candidate)
+    vent_eff_value = vent_effectiveness(alpha_value, fill_ratio_candidate, vent_cfg, cfg)
+
+    (
+        p_air_current,
+        p_co2_current,
+        p_pentane_current,
+        p_total_current,
+    ) = compute_pressures(
+        n_air=state.n_air,
+        n_co2=n_co2_current,
+        n_pentane=n_pentane_gas,
+        temperature_K=T_core_value,
+        headspace_volume=headspace,
+    )
+
+    pressure_excess = max(p_total_current - cfg.ambient_pressure_Pa, 0.0)
+    vent_flow = vent_cfg.total_conductance * vent_eff_value * pressure_excess
+    n_pressure_gases = n_co2_current + n_pentane_gas
+    if vent_flow > 0.0 and n_pressure_gases > 1e-9:
+        moles_removed = vent_flow * dt * p_total_current / max(
+            GAS_CONSTANT * T_core_value,
+            1e-9,
+        )
+        moles_removed = min(moles_removed, n_pressure_gases)
+        co2_share = n_co2_current / n_pressure_gases if n_pressure_gases else 0.0
+        pentane_share = (
+            n_pentane_gas / n_pressure_gases if n_pressure_gases else 0.0
+        )
+        n_co2_current -= moles_removed * co2_share
+        n_pentane_gas -= moles_removed * pentane_share
+        (
+            p_air_current,
+            p_co2_current,
+            p_pentane_current,
+            p_total_current,
+        ) = compute_pressures(
+            n_air=state.n_air,
+            n_co2=n_co2_current,
+            n_pentane=n_pentane_gas,
+            temperature_K=T_core_value,
+            headspace_volume=headspace,
+        )
+
+    gas_volume = (
+        (n_co2_current + n_pentane_gas)
+        * GAS_CONSTANT
+        * T_core_value
+        / STANDARD_PRESSURE_PA
+    )
+    total_volume = ctx.effective_liquid_volume + gas_volume
+    effective_volume = min(total_volume, ctx.cavity_volume)
+    fill_ratio_value = clamp(
+        total_volume / max(ctx.cavity_volume, 1e-12),
+        0.0,
+        1.5,
+    )
+    density = ctx.mass_total / max(effective_volume, 1e-9)
+
+    return GasStepResult(
+        state=GasState(
+            n_air=state.n_air,
+            n_co2=n_co2_current,
+            n_pentane_liquid=n_pentane_liquid,
+            n_pentane_gas=n_pentane_gas,
+        ),
+        fill_ratio=fill_ratio_value,
+        density=density,
+        p_air_Pa=p_air_current,
+        p_co2_Pa=p_co2_current,
+        p_pentane_Pa=p_pentane_current,
+        p_total_Pa=p_total_current,
+        vent_eff=vent_eff_value,
+        vent_closed=vent_eff_value <= 0.1,
+    )
+
+
 def integrate_manual(ctx: SimulationContext) -> Trajectory:
     cfg = ctx.config
     time = linspace(0.0, cfg.total_time_s, cfg.steps())
@@ -160,36 +359,21 @@ def integrate_manual(ctx: SimulationContext) -> Trajectory:
 
     for idx in range(1, len(time)):
         dt = time[idx] - time[idx - 1]
-        arrhenius_factor = arrhenius_multiplier(
-            T_core_current,
-            cfg.reference_temperature_K,
-            cfg.activation_energy_J_per_mol,
-        )
-        rate_modifier = arrhenius_factor * (0.4 + 0.6 * ctx.mixing_factor)
-        phi[idx] = max(
-            phi[idx - 1] + (dt * rate_modifier) / max(ctx.tau_s, 1e-3),
-            0.0,
-        )
-        alpha_value = alpha_from_phi(phi[idx], ctx.exponent)
-        alpha[idx] = alpha_value
+        kinetics = step_kinetics(ctx, alpha[idx - 1], phi[idx - 1], T_core_current, dt)
+        phi[idx] = kinetics.phi
+        alpha[idx] = kinetics.alpha
 
-        dalpha_dt = max(0.0, (alpha_value - alpha[idx - 1]) / max(dt, 1e-9))
-        heat_release = cfg.reaction_enthalpy_J_per_kg * ctx.mass_total * dalpha_dt
-        heat_to_mold = (
-            ctx.mold.h_core_to_mold_W_per_m2K
-            * ctx.mold.mold_surface_area_m2
-            * (T_core_current - T_mold_current)
+        heat_release = cfg.reaction_enthalpy_J_per_kg * ctx.mass_total * kinetics.dalpha_dt
+        heat_transfer = step_heat_transfer(
+            ctx=ctx,
+            T_core_current=T_core_current,
+            T_mold_current=T_mold_current,
+            heat_release_W=heat_release,
+            dt=dt,
         )
-        dT_core_dt = (heat_release - heat_to_mold) / max(ctx.mass_total * cfg.foam_cp_J_per_kgK, 1e-6)
-        dT_mold_dt = (
-            heat_to_mold
-            - ctx.mold.h_mold_to_ambient_W_per_m2K
-            * ctx.mold.mold_surface_area_m2
-            * (T_mold_current - ctx.T_ambient_K)
-        ) / max(ctx.mold.mold_mass_kg * ctx.mold.cp_mold_J_per_kgK, 1e-6)
 
-        T_core_current += dT_core_dt * dt
-        T_mold_current += dT_mold_dt * dt
+        T_core_current = heat_transfer.T_core_K
+        T_mold_current = heat_transfer.T_mold_K
         T_core[idx] = T_core_current
         T_mold[idx] = T_mold_current
 
@@ -291,10 +475,12 @@ def assemble_result(ctx: SimulationContext, trajectory: Trajectory) -> "Simulati
         0.0,
         1.5,
     )
-    n_air = ctx.n_air_initial
-    n_co2_current = 0.0
-    n_pentane_liquid = ctx.n_pentane_total
-    n_pentane_gas = 0.0
+    gas_state = GasState(
+        n_air=ctx.n_air_initial,
+        n_co2=0.0,
+        n_pentane_liquid=ctx.n_pentane_total,
+        n_pentane_gas=0.0,
+    )
 
     headspace0 = headspace_volume(cfg, ctx.cavity_volume, min(ctx.effective_liquid_volume, ctx.cavity_volume))
     p_air0, p_co20, p_pentane0, p_total0 = compute_pressures(
@@ -318,100 +504,27 @@ def assemble_result(ctx: SimulationContext, trajectory: Trajectory) -> "Simulati
         alpha_value = trajectory.alpha[idx]
         T_core_value = trajectory.T_core_K[idx]
 
-        target_co2 = min(
-            ctx.moles_co2_total,
-            ctx.moles_co2_total * (alpha_value ** 1.1) * ctx.gas_release_eff,
+        gas_step = step_gas_state(
+            ctx=ctx,
+            vent_cfg=vent_cfg,
+            state=gas_state,
+            alpha_value=alpha_value,
+            T_core_value=T_core_value,
+            dt=dt,
         )
-        delta_co2 = max(0.0, target_co2 - n_co2_current)
-        n_co2_current += delta_co2
+        gas_state = gas_step.state
 
-        evap_rate = pentane_evap_rate(T_core_value, cfg)
-        delta_pentane = min(n_pentane_liquid, evap_rate * n_pentane_liquid * dt)
-        n_pentane_liquid -= delta_pentane
-        n_pentane_gas += delta_pentane
-
-        gas_volume_candidate = (
-            (n_co2_current + n_pentane_gas)
-            * GAS_CONSTANT
-            * T_core_value
-            / STANDARD_PRESSURE_PA
-        )
-        total_volume_candidate = ctx.effective_liquid_volume + gas_volume_candidate
-        effective_volume_candidate = min(total_volume_candidate, ctx.cavity_volume)
-        fill_ratio_candidate = clamp(
-            total_volume_candidate / max(ctx.cavity_volume, 1e-12),
-            0.0,
-            1.5,
-        )
-
-        headspace = headspace_volume(cfg, ctx.cavity_volume, effective_volume_candidate)
-        vent_eff_value = vent_effectiveness(alpha_value, fill_ratio_candidate, vent_cfg, cfg)
-        vent_eff[idx] = vent_eff_value
-
-        (
-            p_air_current,
-            p_co2_current,
-            p_pentane_current,
-            p_total_current,
-        ) = compute_pressures(
-            n_air=n_air,
-            n_co2=n_co2_current,
-            n_pentane=n_pentane_gas,
-            temperature_K=T_core_value,
-            headspace_volume=headspace,
-        )
-
-        pressure_excess = max(p_total_current - cfg.ambient_pressure_Pa, 0.0)
-        vent_flow = vent_cfg.total_conductance * vent_eff_value * pressure_excess
-        n_pressure_gases = n_co2_current + n_pentane_gas
-        if vent_flow > 0.0 and n_pressure_gases > 1e-9:
-            moles_removed = vent_flow * dt * p_total_current / max(
-                GAS_CONSTANT * T_core_value,
-                1e-9,
-            )
-            moles_removed = min(moles_removed, n_pressure_gases)
-            co2_share = n_co2_current / n_pressure_gases if n_pressure_gases else 0.0
-            pentane_share = (
-                n_pentane_gas / n_pressure_gases if n_pressure_gases else 0.0
-            )
-            n_co2_current -= moles_removed * co2_share
-            n_pentane_gas -= moles_removed * pentane_share
-            (
-                p_air_current,
-                p_co2_current,
-                p_pentane_current,
-                p_total_current,
-            ) = compute_pressures(
-                n_air=n_air,
-                n_co2=n_co2_current,
-                n_pentane=n_pentane_gas,
-                temperature_K=T_core_value,
-                headspace_volume=headspace,
-            )
-
-        if vent_closure_time is None and vent_eff_value <= 0.1:
+        fill_ratio[idx] = gas_step.fill_ratio
+        rho[idx] = gas_step.density
+        n_co2[idx] = gas_state.n_co2
+        p_air[idx] = gas_step.p_air_Pa
+        p_co2[idx] = gas_step.p_co2_Pa
+        p_pentane[idx] = gas_step.p_pentane_Pa
+        p_total[idx] = gas_step.p_total_Pa
+        vent_eff[idx] = gas_step.vent_eff
+        if vent_closure_time is None and gas_step.vent_closed:
             vent_closure_time = float(time[idx])
-
-        gas_volume = (
-            (n_co2_current + n_pentane_gas)
-            * GAS_CONSTANT
-            * T_core_value
-            / STANDARD_PRESSURE_PA
-        )
-        total_volume = ctx.effective_liquid_volume + gas_volume
-        effective_volume = min(total_volume, ctx.cavity_volume)
-        fill_ratio[idx] = clamp(
-            total_volume / max(ctx.cavity_volume, 1e-12),
-            0.0,
-            1.5,
-        )
-        rho[idx] = ctx.mass_total / max(effective_volume, 1e-9)
-        n_co2[idx] = n_co2_current
-        p_air[idx] = p_air_current
-        p_co2[idx] = p_co2_current
-        p_pentane[idx] = p_pentane_current
-        p_total[idx] = p_total_current
-        p_max_value = max(p_max_value, p_total_current)
+        p_max_value = max(p_max_value, gas_step.p_total_Pa)
 
     rho_moulded = rho[-1]
     hardness = compute_hardness_profile(trajectory.alpha, rho, cfg)
