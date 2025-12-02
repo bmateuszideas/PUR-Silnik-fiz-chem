@@ -1,0 +1,32 @@
+system_id: SYSTEM_R1
+
+process:
+  m_polyol: 1.0
+  m_iso: 1.05
+  m_additives: 0.0
+  nco_oh_index: 1.05
+  T_polyol_in_C: 25.0
+  T_iso_in_C: 25.0
+  T_mold_init_C: 40.0
+  T_ambient_C: 22.0
+  RH_ambient: 0.5
+  mixing_eff: 0.9
+
+mold:
+  cavity_volume_m3: 0.025
+  mold_surface_area_m2: 0.8
+  mold_mass_kg: 120.0
+
+quality:
+  alpha_demold_min: 0.75
+  rho_moulded_min: 35.0
+  rho_moulded_max: 45.0
+  core_temp_max_C: 90.0
+  p_max_allowable_bar: 6.0
+  H_demold_min_shore: 40.0
+  H_24h_min_shore: 55.0
+
+simulation:
+  total_time_s: 600.0
+  time_step_s: 0.5
+  backend: manual

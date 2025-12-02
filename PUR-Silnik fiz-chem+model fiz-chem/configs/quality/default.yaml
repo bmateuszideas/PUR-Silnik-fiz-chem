@@ -1,0 +1,8 @@
+alpha_demold_min: 0.75
+rho_moulded_min: 35.0
+rho_moulded_max: 45.0
+core_temp_max_C: 90.0
+p_max_allowable_bar: 6.0
+H_demold_min_shore: 40.0
+H_24h_min_shore: 55.0
+defect_risk_max: 0.1
