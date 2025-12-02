@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Literal, Tuple
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .utils import STANDARD_PRESSURE_PA, clamp
 
@@ -46,7 +46,7 @@ class ProcessConditions(BaseModel):
         value = self.RH_ambient
         return clamp(value, 0.0, 1.0)
 
-    @validator("RH_ambient")
+    @field_validator("RH_ambient", mode="before")
     def _validate_rh(cls, value: float) -> float:
         # Allow either 0-1 fraction or 0-100 percent.
         if value > 1.0:
@@ -55,7 +55,7 @@ class ProcessConditions(BaseModel):
             raise ValueError("RH_ambient must be between 0 and 1 (or 0-100%).")
         return value
 
-    @validator("T_polyol_in_C", "T_iso_in_C", "T_mold_init_C", "T_ambient_C", pre=True)
+    @field_validator("T_polyol_in_C", "T_iso_in_C", "T_mold_init_C", "T_ambient_C", mode="before")
     def _convert_process_temperatures(cls, value: Any) -> float:
         return _coerce_quantity(value, "degC")
 
@@ -93,21 +93,21 @@ class QualityTargets(BaseModel):
     H_24h_min_shore: float = Field(50.0, gt=0)
     defect_risk_max: float = Field(0.10, ge=0.0, le=1.0)
 
-    @validator("rho_moulded_max")
-    def _rho_bounds(cls, value: float, values: dict) -> float:
-        if "rho_moulded_min" in values and value <= values["rho_moulded_min"]:
+    @model_validator(mode="after")
+    def _check_rho_bounds(self) -> "QualityTargets":
+        if self.rho_moulded_max <= self.rho_moulded_min:
             raise ValueError("rho_moulded_max must be greater than rho_moulded_min.")
-        return value
+        return self
 
-    @validator("core_temp_max_C", pre=True)
+    @field_validator("core_temp_max_C", mode="before")
     def _convert_core_temp(cls, value: Any) -> float:
         return _coerce_quantity(value, "degC")
 
-    @validator("p_max_allowable_bar", pre=True)
+    @field_validator("p_max_allowable_bar", mode="before")
     def _convert_pressure_bar(cls, value: Any) -> float:
         return _coerce_quantity(value, "bar")
 
-    @validator("rho_moulded_min", "rho_moulded_max", pre=True)
+    @field_validator("rho_moulded_min", "rho_moulded_max", mode="before")
     def _convert_density(cls, value: Any) -> float:
         return _coerce_quantity(value, "kilogram / meter ** 3")
 
@@ -142,18 +142,17 @@ class SimulationConfig(BaseModel):
     def steps(self) -> int:
         return int(self.total_time_s / self.time_step_s) + 1
 
-    @validator("total_time_s")
-    def _validate_total_time(cls, value: float, values: dict) -> float:
-        time_step = values.get("time_step_s")
-        if time_step and value <= time_step:
+    @model_validator(mode="after")
+    def _validate_total_time(self) -> "SimulationConfig":
+        if self.total_time_s <= self.time_step_s:
             raise ValueError("total_time_s must be greater than time_step_s.")
-        return value
+        return self
 
-    @validator("reference_temperature_K", "pentane_evap_onset_K", pre=True)
+    @field_validator("reference_temperature_K", "pentane_evap_onset_K", mode="before")
     def _convert_kelvin_fields(cls, value: Any) -> float:
         return _coerce_quantity(value, "kelvin")
 
-    @validator("ambient_pressure_Pa", pre=True)
+    @field_validator("ambient_pressure_Pa", mode="before")
     def _convert_pressure_pa(cls, value: Any) -> float:
         return _coerce_quantity(value, "pascal")
 

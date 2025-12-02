@@ -31,8 +31,8 @@ Zasady dla Core Engine i Process Optimizer: jezyk, kodowanie, nazewnictwo, jedno
 - Zasada: wszystko, co wchodzi do rownan, ma jednostki SI.
 
 ## 4. Struktura repo
-- Kod (Core Engine + Process Optimizer): `src/pur_mold_twin/`
-- Testy: `tests/` (aktualnie `test_core_simulation.py`, `test_optimizer.py`; zakres bedzie rozszerzany)
+- Kod (Core Engine + Process Optimizer + raporty): `src/pur_mold_twin/`
+- Testy: `tests/` (m.in. `test_core_simulation.py`, `test_optimizer.py`, `test_cli.py`, `test_calibration*`, `test_etl.py`, `test_reporting.py`)
 - Dokumentacja:
   - `agent_instructions.md`, `copilot_update_project_playbook.md`
   - `README.md`, `README_VERS.md`
@@ -43,9 +43,10 @@ Zasady dla Core Engine i Process Optimizer: jezyk, kodowanie, nazewnictwo, jedno
   - `docs/CALIBRATION.md` (workflow kalibracji/walidacji),
   - `docs/ML_LOGGING.md` (logi procesowe i plan ML).
 - Administracja:
-  - `admin/TODO1_PKT{n}_changelog.md` - wpisy agenta (data, lista plikow, opis celu) dla kazdego podpunktu TODO1.
+  - `admin/TODO1_PKT{n}_changelog.md` / `admin/TODO2_PKT{n}_changelog.md` - wpisy agenta (data, lista plikow, opis celu) dla kazdego podpunktu TODO.
 - Brak losowych skryptow w root; kod produkcyjny w `src/pur_mold_twin/`.
 - Dane pomiarowe/ML: przechowuj lokalnie w `data/calibration/` i `data/ml/` (patrz `.gitignore`); repo trzyma tylko metadane/skrypty.
+- Packaging/CI: konfiguracja w `pyproject.toml` (dependencies + extras, entry-point `pur-mold-twin`), workflow CI w `.github/workflows/ci.yml` uruchamia `pytest`.
 
 ## 6. Mapowanie nazw pola (wejscie vs solver)
 - `T_polyol_in` → `T_polyol_in_C` (wejscie w °C, wewnetrznie K)

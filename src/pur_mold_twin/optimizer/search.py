@@ -13,7 +13,7 @@ from typing import List, Optional, Sequence, Tuple
 
 import random
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..core import MVP0DSimulator, ProcessConditions, QualityTargets, SimulationConfig
 from ..core.mvp0d import SimulationResult
@@ -31,7 +31,7 @@ class OptimizerBounds(BaseModel):
     def clamp(self, value: float, bounds: Tuple[float, float]) -> float:
         return max(bounds[0], min(bounds[1], value))
 
-    @validator("T_polyol_C", "T_iso_C", "T_mold_C", "t_demold_s")
+    @field_validator("T_polyol_C", "T_iso_C", "T_mold_C", "t_demold_s")
     def _validate_bounds(cls, value: Tuple[float, float]) -> Tuple[float, float]:
         if value[1] <= value[0]:
             raise ValueError(f"Upper bound {value[1]} must be greater than lower bound {value[0]}.")

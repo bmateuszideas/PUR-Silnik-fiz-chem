@@ -14,6 +14,9 @@ Zakres: kontrola spojnosci repo z `todo1.md` (szczegolnie §13) oraz weryfikacja
 - Test regresyjny optymalizatora (`tests/test_optimizer.py`) wykorzystuje `use_case_1` i weryfikuje brak dryfu; dodano testy skrajne (brak ventów) i podstawowe tolerancje.
 - Kalibracja: nowy pakiet `calibration/` (loader/cost/fit) oraz skrypty `calibrate_kinetics.py`, `compare_shot.py`, `calibration_report.py`, `plot_kinetics.py`; dokument `docs/CALIBRATION.md` opisuje automatyzację.
 - CLI: rozbudowany Typer (`run-sim`/`optimize`, eksport JSON/CSV, `--verbose`); testy CLI w `tests/test_cli.py` (happy-path, błędne pliki).
+- ML/ETL: moduły logowania/featur (`logging/`, `data/`, `ml/`), CLI `build-features`; `docs/ML_LOGGING.md` i `todo2.md` §8 domknięte.
+- Raporty: `run-sim --report` generuje raport Markdown + wykresy (matplotlib); dokumentacja w `docs/USE_CASES.md`.
+- Packaging/CI: `pyproject.toml` z dependencies/extras i entry-pointem `pur-mold-twin`; prosty workflow `.github/workflows/ci.yml` uruchamia `pytest`.
 
 ## 1. Stan TODO1
 - §1-12 oznaczone jako ukonczone i faktycznie posiadaja odpowiadajace pliki/kod (`docs/MODEL_OVERVIEW.md`, `src/pur_mold_twin/core`, `docs/CALIBRATION.md`, `docs/ML_LOGGING.md`).

@@ -95,7 +95,7 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
 - Kodowanie plikow: UTF-8 (bez znakow dziwnych).
 - Repo: struktura i katalogi opisane w `docs/STRUCTURE.md`; kod `src/pur_mold_twin/`, testy `tests/`, dokumentacja `README.md`, `TODO.md`, `docs/...` wg standardow.
 - Audyt pracy AI: katalog `admin/` zawiera pliki `TODO1_PKT{n}_changelog.md`. Po kazdej zmianie w danym punkcie TODO1 dopisz datowany wpis z lista plikow i krotkim celem; jezeli nie mozesz czegos wykonac, wpisz problem i zaznacz go w `todo1.md` (linia `> Problem: ...`).
-- CLI: `src/pur_mold_twin/cli/main.py` + `cli/commands.py` (Typer) dostarcza komendy `run-sim`/`optimize` z flagami `--output`, `--save-json`, `--export-csv`, `--verbose`.
+- CLI: `src/pur_mold_twin/cli/main.py` + `cli/commands.py` (Typer) dostarcza komendy `run-sim`/`optimize` oraz `build-features` z flagami `--output`, `--save-json`, `--export-csv`, `--verbose`.
 - Testy: `tests/test_core_simulation.py`, `tests/test_optimizer.py`, `tests/test_cli.py` (scenariusz `use_case_1`), kolejne przypadki dojda w fazie produktowej.
 
 ## 10. Status
@@ -155,9 +155,16 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
   print(opt_result.best_candidate, opt_result.best_constraints)
   ```
 
+## 15. CLI/raporty/packaging
+- CLI Typer (`pur-mold-twin`) dostarcza komendy `run-sim`, `optimize`, `build-features`; flaga `--report` zapisuje raport Markdown z wykresami (wymaga `matplotlib`).
+- Instalacja lokalna: `pip install .` lub `pip install .[dev]` (testy) / `pip install .[ml]` (opcjonalne ML).
+- Entry-point: `pur-mold-twin` (zdefiniowany w `pyproject.toml`).
+- CI: `.github/workflows/ci.yml` uruchamia `pytest` (coverage >80% dla `core`); docelowy runtime Python 3.14, w Actions używany kompatybilny runner.
+
 ## 13. ML i logi procesu (TODO §12)
 - Szczegoly planu ML/logowania: `docs/ML_LOGGING.md` (format logow, featury, modele i pipeline ETL).
 - Surowe logi trafiaja do `data/ml/` (gitignore), ETL buduje `data/ml/features.parquet` laczac pomiary i wyniki symulacji.
+- CLI `build-features`: `pur-mold-twin build-features --sim out/use_case_1.json --measured logs/sample/ --output data/ml/features.parquet` (przyjmuje katalog logow lub pojedynczy CSV).
 - Modele startowe: `RandomForestRegressor` (`defect_risk`) i `RandomForestClassifier` (etykiety defektow); w przyszlosci komenda `pur-mold-twin ml-train` bedzie wykorzystywala te zasoby.
 - ML jest opcjonalne; zaleznosci instaluje sie jako extras `pur-mold-twin[ml]`, a CLI komunikuje brak modulow ML.
 

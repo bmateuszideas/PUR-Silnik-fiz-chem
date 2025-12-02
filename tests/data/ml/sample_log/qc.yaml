@@ -1,0 +1,7 @@
+rho_moulded: 41.0
+rho_free_rise: 30.0
+H_demold: 44
+H_24h: 55
+defects:
+  - voids
+defect_risk_operator: 0.2

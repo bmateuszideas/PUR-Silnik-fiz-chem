@@ -22,6 +22,7 @@ from ..core import MVP0DSimulator
 from ..material_db.loader import load_material_catalog
 from ..material_db.models import MaterialSystem
 from ..optimizer import OptimizationConfig, ProcessOptimizer
+from ..reporting import generate_report, plot_profiles
 from ..utils import get_logger
 
 
@@ -33,6 +34,7 @@ def register_commands(app: typer.Typer) -> None:
 
     app.command("run-sim")(run_sim)
     app.command("optimize")(optimize)
+    app.command("build-features")(build_features_cli)
 
 
 class OutputFormat(str, Enum):
@@ -70,6 +72,11 @@ def run_sim(
         None, "--export-csv", help="Optional CSV path for time-series profiles."
     ),
     backend: Optional[str] = typer.Option(None, "--backend", help="Override solver backend (manual/solve_ivp)."),
+    report: Optional[Path] = typer.Option(
+        None,
+        "--report",
+        help="Optional path to save a Markdown report (plots saved alongside).",
+    ),
 ) -> None:
     """Run a single 0D simulation."""
 
@@ -99,6 +106,22 @@ def run_sim(
         _export_profiles_csv(result, export_csv)
         LOGGER.info("Saved simulation profiles to %s", export_csv)
         typer.echo(f"Saved time-series CSV to {export_csv}")
+
+    if report:
+        try:
+            plot_dir = report.parent if report.suffix else report
+            plot_dir.mkdir(parents=True, exist_ok=True)
+            plots = plot_profiles(result, plot_dir, prefix=report.stem or "report")
+            metadata = {
+                "scenario": str(scenario),
+                "system_id": system_id,
+                "backend": sim_config.backend,
+            }
+            generate_report(result, plots, report, metadata=metadata)
+            typer.echo(f"Saved report to {report}")
+        except ImportError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(1)
 
 
 def optimize(
@@ -190,6 +213,30 @@ def optimize(
         _export_optimizer_history(result, export_csv)
         LOGGER.info("Saved optimizer history to %s", export_csv)
         typer.echo(f"Saved optimizer history CSV to {export_csv}")
+
+
+def build_features_cli(
+    measured: Path = typer.Option(
+        ...,
+        "--measured",
+        "-m",
+        help="Path to measured log directory (meta/process/sensors_*.csv) or a CSV with time_s,T_core_C,p_total_bar.",
+    ),
+    sim: Path = typer.Option(..., "--sim", "-s", help="Simulation JSON exported by run-sim."),
+    output: Path = typer.Option("data/ml/features.parquet", "--output", "-o", help="Output Parquet with features."),
+) -> None:
+    """Build basic feature set combining measurement and simulation outputs."""
+
+    try:
+        import pandas as pd  # noqa: F401
+    except ModuleNotFoundError:  # pragma: no cover
+        typer.echo("pandas is required for build-features; install per py_lib.md", err=True)
+        raise typer.Exit(1)
+
+    from ..data.dataset import build_dataset
+
+    features, saved_path = build_dataset(sim, measured, output)
+    typer.echo(f"Saved features to {saved_path} (rows={len(features)}); columns={list(features.columns)}")
 
 
 def _load_process_scenario(path: Path):

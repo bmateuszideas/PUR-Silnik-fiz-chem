@@ -1,100 +1,87 @@
 # py_lib.md – stos bibliotek PUR-MOLD-TWIN (Faza 2 – Productization & Quality)
 
-Docelowy stack Pythona dla fazy TODO2. Core musi działać bez „egzotycznych” zależności; extras są włączane tylko wtedy, gdy użytkownik świadomie je doinstaluje.
+Docelowy stack Pythona dla TODO2. Core ma dzialac bez egzotycznych zaleznosci; extras instalowane tylko gdy sa potrzebne.
 
 ---
 
 ## 1. Core produkcyjny – silnik 0D
 
-Te biblioteki są **twardymi zależnościami runtime** (w `pyproject.toml` bez extras).
+Twarde zaleznosci runtime (w `pyproject.toml` bez extras).
 
-- **numpy** – podstawowa algebra numeryczna, macierze, operacje na tablicach (profil `alpha/T/rho`, gazy, raporty).
+- **numpy** – algebra numeryczna, wektory/macierze, profile alpha/T/rho/gazy.
 - **scipy**
-  - `scipy.integrate.solve_ivp` stanowi domyślny backend ODE (`SimulationConfig.backend="solve_ivp"`).
-  - Stosujemy metody stiff (`Radau`, `BDF`) zgodnie z rekomendacją dokumentacji SciPy oraz eventy do wykrywania cream/gel/rise/demold.
-  - `scipy.optimize` pozostaje narzędziem do prostych fitów/kosztów (kalibracja, local search).
+  - `scipy.integrate.solve_ivp` jako domyslny backend ODE (`SimulationConfig.backend="solve_ivp"`), metody stiff `Radau`/`BDF`, eventy cream/gel/rise/demold.
+  - `scipy.optimize` do prostych fitow/kosztow (kalibracja, local search).
 - **pydantic**
-  - Modele danych i konfiguracji (`SimulationConfig`, `SimulationResult`, `ProcessConditions`, `MaterialSystem`, `OptimizerConfig`…).
-  - Walidacja typów i zakresów (`RH ∈ [0,1]`, twardości dodatnie, masy > 0 itd.) + serializacja CLI.
+  - Modele danych/config (`SimulationConfig`, `SimulationResult`, `ProcessConditions`, `MaterialSystem`, `OptimizerConfig`...).
+  - Walidacja typow i zakresow (`RH 0-1`, masy >0, twardosci >0) + serializacja CLI.
 - **pint**
-  - Jednostki fizyczne na I/O (°C/K, bar/Pa, kg/m³, s); w solverze pracujemy w SI, na brzegach `Quantity`.
-  - Konwencja: pint na wejściu/wyjściu, wewnątrz czyste `float` w SI dla wydajności.
+  - Jednostki fizyczne na I/O (C/K, bar/Pa, kg/m3, s); wewnatrz solvera czyste floaty w SI.
 
 ---
 
 ## 2. Konfiguracje, CLI i I/O
 
-Również traktujemy jako **produkcyjne** – bez nich nie ma sensownego interfejsu.
+Rowniez produkcyjne – bez nich brak interfejsu.
 
 - **ruamel.yaml**
-  - Loader Material DB oraz scenariuszy/presetów jakości:
-    - round-trip (utrzymuje komentarze i kolejność – ważne dla katalogu `configs/systems`),
-    - ładowanie → walidacja Pydantic (`MaterialSystem`, `ProcessConditions`, `QualityTargets`, `SimulationConfig`).
+  - Loader Material DB oraz scenariuszy/presetow jakosci:
+    - round-trip (komentarze, kolejnosc kluczy w `configs/systems`),
+    - ladowanie + walidacja Pydantic (`MaterialSystem`, `ProcessConditions`, `QualityTargets`, `SimulationConfig`).
 - **typer**
-  - Framework CLI (`pur-mold-twin`):
-    - komendy `run-sim`, `optimize`, `build-features`, `--version`, `--verbose`.
-    - testy CLI opierają się na `CliRunner`.
+  - Framework CLI (`pur-mold-twin`): komendy `run-sim`, `optimize`, `build-features`, `--version`, `--verbose`; testy CLI na `CliRunner`.
 - **pandas**
-  - ETL/logging/raporty:
-    - logi runtime → DataFrame,
-    - pipeline featur (`T_max`, `p_max`, slopes, różnice vs pomiar),
-    - builder datasetów (`features.parquet`), zasilanie baseline’ów ML.
+  - ETL/logging/raporty: logi runtime -> DataFrame; pipeline featur (`T_max`, `p_max`, slopes, roznice vs pomiar); builder datasetow (`features.parquet`) dla ML.
+- **matplotlib**
+  - Wykresy profili symulacji (alpha/T/p/rho/vent) i raporty CLI (`reporting/plots.py`, `run-sim --report`).
 
 ---
 
-## 3. ML / analytics – **opcjonalne extras**
+## 3. ML / analytics – opcjonalne extras
 
-Projekt ma działać bez ML. Te biblioteki instalujemy jako `pur-mold-twin[ml]`.
+Projekt dziala bez ML. Instalujemy jako `pur-mold-twin[ml]`.
 
 - **scikit-learn**
-  - baseline’y: klasyfikacja defektów, regresja `defect_risk`, feature importance.
-  - Proste modele (RandomForest, GradientBoosting, LogisticRegression).
+  - Baseline: klasyfikacja defektow, regresja `defect_risk`, feature importance (RandomForest/GradientBoosting/LogisticRegression).
   - Importy guardowane (`try/except ImportError`), CLI komunikuje brak extras.
 
 ---
 
-## 4. Backend ODE – przyszłe rozszerzenia (TODO3+)
+## 4. Backend ODE – przyszle rozszerzenia (TODO3+)
 
-Architektura solvera (abstrakcja backendu) umożliwia dołączanie kolejnych bibliotek, ale **nie instalujemy ich w TODO2**.
+Architektura backendu pozwala dolaczyc kolejne biblioteki, ale nie instalujemy ich w TODO2.
 
-- **SUNDIALS (przez scikits.odes / scikit-SUNDAE)**
-  - CVODE/IDA do dużych, stiff systemów lub DAE.
-  - Planowane jako extras `pur-mold-twin[sundials]`.
-- **JAX + Diffrax / probdiffeq**
-  - Backend eksperymentalny (auto-diff, GPU, probabilistyczne ODE).
-
-Na etapie TODO2 implementujemy tylko `ScipyBackend` (`solve_ivp`), utrzymując czyste API `ODESolverBackend`, aby kolejne backendy można było dopiąć bez łamania kodu.
+- **SUNDIALS** (scikits.odes / scikit-SUNDAE) – CVODE/IDA dla duzych stiff systemow/DAE, extras `pur-mold-twin[sundials]`.
+- **JAX + Diffrax/probdiffeq** – eksperymentalny backend (auto-diff, GPU, probabilistyczne ODE).
 
 ---
 
 ## 5. Zaawansowana chemia – integracje specjalne (opcjonalne)
 
-Nie wchodzą do core TODO2, ale zostawiamy miejsce w architekturze.
+Nie wchodza do core TODO2, zostawiamy miejsce w architekturze.
 
-- **Cantera** – pełna kinetyka/termodynamika/transport; potencjalny backend dla rozszerzonego modelu PUR.
-- **ChemPy** – układy reakcji chemicznych + równowagi.
-
-Na razie pozostajemy przy własnym modelu Arrhenius/empirycznym (kalibracja vs TDS).
+- **Cantera** – kinetyka/termodynamika/transport (opcjonalny backend).
+- **ChemPy** – uklady reakcji + rownowagi.
 
 ---
 
 ## 6. Dev / QA
 
-Zależności instalowane tylko dla developmentu/CI (`pur-mold-twin[dev]`):
+Instalowane tylko dla developmentu/CI (`pur-mold-twin[dev]`):
 
-- **pytest**, **pytest-cov** – testy jednostkowe/regresyjne + coverage (cel >80% modułu `core`).
+- **pytest**, **pytest-cov** – testy i coverage (cel >80% dla `core`).
 - **mypy** – statyczne typowanie (opcjonalnie).
-- **ruff** / **black** – lint + format.
-- (opcjonalnie) `pre-commit` – spójny workflow developerski.
+- **ruff**, **black** – lint + format.
+- (opcjonalnie) `pre-commit`.
 
 ---
 
 ## 7. Kontrakt dla TODO2
 
-1. **Must-have w podstawowej instalacji**: `numpy`, `scipy`, `pydantic`, `pint`, `ruamel.yaml`, `typer`, `pandas`.
-2. **Extras**:
-   - `[ml]` → `scikit-learn`,
-   - `[sundials]`, `[jax]`, `[chem]` (Cantera/ChemPy) – dopiero po akceptacji wewnętrznej (TODO3+).
-3. **Dev** → `[dev]` (`pytest`, `pytest-cov`, `mypy`, `ruff`, `black`).
+1. Must-have w podstawowej instalacji: `numpy`, `scipy`, `pydantic`, `pint`, `ruamel.yaml`, `typer`, `pandas`, `matplotlib`.
+2. Extras:
+   - `[ml]` -> `scikit-learn`,
+   - `[sundials]`, `[jax]`, `[chem]` (Cantera/ChemPy) dopiero po akceptacji (TODO3+).
+3. Dev -> `[dev]` (`pytest`, `pytest-cov`, `mypy`, `ruff`, `black`).
 
-CLI, dokumentacja i configi mają jasno komunikować ten podział – core działa „od razu po `pip install pur-mold-twin`”, a wszystkie cięższe integracje są świadomie opt-in.
+Core dziala od razu po `pip install pur-mold-twin`; ML/back-endy specjalne sa opt-in.

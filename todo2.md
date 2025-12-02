@@ -88,34 +88,34 @@ Druga lista zadan po domknieciu TODO1. Skupia sie na modularizacji core, docelow
 
 ## 8. Logi symulacji, ETL, featury i ML
 
-- [ ] Zaimplementowac modul logowania symulacji (profile + meta) zgodnie z `docs/ML_LOGGING.md`. -> `src/pur_mold_twin/logging/logger.py`, `py_lib.md`
-- [ ] Zbudowac pipeline `build_features` (skrypt/CLI), ktory z logow wyciagnie featury opisane w ML_LOGGING (T_max, p_max, slopes, roznice vs pomiar). -> `src/pur_mold_twin/logging/features.py`
-- [ ] Dodac komende CLI `build-features` i opis w `readme.md`. -> `src/pur_mold_twin/cli/main.py`, `readme.md`
-- [ ] Sprawdzic spojnosc nazw featur miedzy ML_LOGGING a kodem. -> `docs/ML_LOGGING.md`
-- [ ] Modul ETL: parsowanie surowych logow (format z `docs/ML_LOGGING.md`) do obiektow `ProcessConditions`. -> `src/pur_mold_twin/data/etl.py`
-- [ ] Obsluga brakujacych danych: strategie uzupelniania (np. domyslne RH jesli brak czujnika). -> `src/pur_mold_twin/data/etl.py`
-- [ ] Testy ETL: parsowanie przykladowego pliku logow. -> `tests/test_etl.py`
-- [ ] Dataset builder: laczenie wynikow symulacji z danymi z ETL w `features.parquet`. -> `src/pur_mold_twin/data/dataset.py`
-- [ ] Struktura katalogow: utworzenie `data/ml/` (gitignored) i skryptow pomocniczych. -> `scripts/build_dataset.py`
-- [ ] Weryfikacja schematu danych: zgodnosc kolumn z `docs/ML_LOGGING.md`. -> `src/pur_mold_twin/data/schema.py`
-- [ ] Utworzyc modul `ml/baseline.py` (sklearn) z modelami klasyfikacji defektow i regresji `defect_risk`. -> `src/pur_mold_twin/ml/baseline.py`, `py_lib.md`
-- [ ] Przygotowac minimalny skrypt treningowy (train/test split, zapis modelu). -> `src/pur_mold_twin/ml/train_baseline.py`
-- [ ] Dodac sekcje „ML (opcjonalnie)” w `docs/ML_LOGGING.md` i `readme.md`, opisujaca te baseline’y. -> `docs/ML_LOGGING.md`, `readme.md`
-- [ ] Upewnic sie, ze ML jest oznaczone jako **opcjonalne** (projekt dziala bez zainstalowanego `scikit-learn`). -> `py_lib.md`, `readme.md`
+- [x] Zaimplementowac modul logowania symulacji (profile + meta) zgodnie z `docs/ML_LOGGING.md`. -> `src/pur_mold_twin/logging/logger.py`, `py_lib.md`
+- [x] Zbudowac pipeline `build_features` (skrypt/CLI), ktory z logow wyciagnie featury opisane w ML_LOGGING (T_max, p_max, slopes, roznice vs pomiar). -> `src/pur_mold_twin/logging/features.py`
+- [x] Dodac komende CLI `build-features` i opis w `readme.md`. -> `src/pur_mold_twin/cli/main.py`, `readme.md`
+- [x] Sprawdzic spojnosc nazw featur miedzy ML_LOGGING a kodem. -> `docs/ML_LOGGING.md`
+- [x] Modul ETL: parsowanie surowych logow (format z `docs/ML_LOGGING.md`) do obiektow `ProcessConditions`. -> `src/pur_mold_twin/data/etl.py`
+- [x] Obsluga brakujacych danych: strategie uzupelniania (np. domyslne RH jesli brak czujnika). -> `src/pur_mold_twin/data/etl.py`
+- [x] Testy ETL: parsowanie przykladowego pliku logow. -> `tests/test_etl.py`
+- [x] Dataset builder: laczenie wynikow symulacji z danymi z ETL w `features.parquet`. -> `src/pur_mold_twin/data/dataset.py`
+- [x] Struktura katalogow: utworzenie `data/ml/` (gitignored) i skryptow pomocniczych. -> `scripts/build_dataset.py`
+- [x] Weryfikacja schematu danych: zgodnosc kolumn z `docs/ML_LOGGING.md`. -> `src/pur_mold_twin/data/schema.py`
+- [x] Utworzyc modul `ml/baseline.py` (sklearn) z modelami klasyfikacji defektow i regresji `defect_risk`. -> `src/pur_mold_twin/ml/baseline.py`, `py_lib.md`
+- [x] Przygotowac minimalny skrypt treningowy (train/test split, zapis modelu). -> `src/pur_mold_twin/ml/train_baseline.py`
+- [x] Dodac sekcje "ML (opcjonalnie)" w `docs/ML_LOGGING.md` i `readme.md`, opisujaca te baseline'y. -> `docs/ML_LOGGING.md`, `readme.md`
+- [x] Upewnic sie, ze ML jest oznaczone jako **opcjonalne** (projekt dziala bez zainstalowanego `scikit-learn`). -> `py_lib.md`, `readme.md`
 
 ## 9. Wizualizacja i raporty
 
-- [ ] Dodac modul `reporting/plots.py` z funkcjami do rysowania profili (alpha/T/p/rho) przy uzyciu `matplotlib`. -> `src/pur_mold_twin/reporting/plots.py`, `py_lib.md`
-- [ ] Dodac prosty raport HTML/Markdown (np. generator na podstawie szablonu) z wykresami i KPI dla jednego strzalu. -> `src/pur_mold_twin/reporting/report.py`
-- [ ] Zintegrowac generowanie raportu jako opcje CLI (`run-sim --report`). -> `src/pur_mold_twin/cli/main.py`
-- [ ] Uaktualnic `docs/USE_CASES.md` o use-case „wygeneruj raport z symulacji/optimizacji”. -> `docs/USE_CASES.md`
+- [x] Dodac modul `reporting/plots.py` z funkcjami do rysowania profili (alpha/T/p/rho) przy uzyciu `matplotlib`. -> `src/pur_mold_twin/reporting/plots.py`, `py_lib.md`
+- [x] Dodac prosty raport HTML/Markdown (np. generator na podstawie szablonu) z wykresami i KPI dla jednego strzalu. -> `src/pur_mold_twin/reporting/report.py`
+- [x] Zintegrowac generowanie raportu jako opcje CLI (`run-sim --report`). -> `src/pur_mold_twin/cli/main.py`
+- [x] Uaktualnic `docs/USE_CASES.md` o use-case „wygeneruj raport z symulacji/optimizacji”. -> `docs/USE_CASES.md`
 
 ## 10. Packaging, CI, dokumentacja
 
-- [ ] Uporzadkowac `pyproject.toml` / konfiguracje dependency (`numpy`, `scipy`, `pydantic`, `pint`, `ruamel.yaml`, `typer`, `pytest`, opcjonalne ML); odnotowac to w `py_lib.md`. -> `pyproject.toml`, `py_lib.md`
-- [ ] Dodac entry-point dla CLI (`pur-mold-twin`) w packagingu. -> `pyproject.toml`, `src/pur_mold_twin/cli/main.py`
-- [ ] Skonfigurowac proste CI (np. GitHub Actions) odpalajace `pytest` + ewentualnie mypy/ruff/black. -> `.github/workflows/*`
-- [ ] Zaktualizowac `standards.md` o zasady dot. CLI, packagingu, CI (wersjonowanie, naming) oraz sprawdzic zgodnosc nowych modulow (CLI, ETL). -> `standards.md`, `README_VERS.md`
-- [ ] Aktualizacja `README.md`: instrukcja CLI (`run-sim`, `optimize`, flagi, konfiguracje) oraz finalny przeglad spojnosci `docs/` po zakonczeniu Fazy 2. -> `README.md`, `docs/*`
-- [ ] Aktualizacja `py_lib.md`: dodanie `typer`, `ruamel.yaml`, `pandas` (ETL) jako zaleznosci produkcyjnych. -> `py_lib.md`
+- [x] Uporzadkowac `pyproject.toml` / konfiguracje dependency (`numpy`, `scipy`, `pydantic`, `pint`, `ruamel.yaml`, `typer`, `pytest`, opcjonalne ML); odnotowac to w `py_lib.md`. -> `pyproject.toml`, `py_lib.md`
+- [x] Dodac entry-point dla CLI (`pur-mold-twin`) w packagingu. -> `pyproject.toml`, `src/pur_mold_twin/cli/main.py`
+- [x] Skonfigurowac proste CI (np. GitHub Actions) odpalajace `pytest` + ewentualnie mypy/ruff/black. -> `.github/workflows/*`
+- [x] Zaktualizowac `standards.md` o zasady dot. CLI, packagingu, CI (wersjonowanie, naming) oraz sprawdzic zgodnosc nowych modulow (CLI, ETL). -> `standards.md`, `README_VERS.md`
+- [x] Aktualizacja `README.md`: instrukcja CLI (`run-sim`, `optimize`, flagi, konfiguracje) oraz finalny przeglad spojnosci `docs/` po zakonczeniu Fazy 2. -> `README.md`, `docs/*`
+- [x] Aktualizacja `py_lib.md`: dodanie `typer`, `ruamel.yaml`, `pandas` (ETL) jako zaleznosci produkcyjnych. -> `py_lib.md`
 
