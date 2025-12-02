@@ -68,49 +68,11 @@ Przekształcenie obecnego MVP w **dojrzały, skalowalny, produkcyjny silnik pred
 
 **Zakres:** modularne backendy ODE, alternatywne solvery, wydajność. 
 
-- **(4)** Wyekstrahować wybór backendu ODE do nowego modułu `src/pur_mold_twin/core/ode_backends.py`  
   - zdefiniować spójny interfejs np. `integrate_system(ctx, config) -> Trajectory`,  
   - odpiąć bezpośrednią logikę backendów z `core/simulation.py` i przekierować przez `ode_backends`,  
   - udokumentować architekturę backendów w `docs/MODEL_OVERVIEW.md`.
 
 - **(5)** Dodać grupy extras `[sundials]` i `[jax]` w `pyproject.toml` + opis w `py_lib.md`  
-  - jakie paczki są wymagane,  
-  - na jakich platformach testowane,  
-  - jakie są ograniczenia i typowe przypadki użycia.
-
-- **(6)** Zaimplementować pełny backend SUNDIALS (`backend="sundials"`)  
-  - integracja przez np. `scikits.odes` lub `scikit-sundae`,  
-  - konfiguracja tolerancji, maks. kroków, strategii step-size,  
-  - czytelna diagnostyka: brak libs, błędy solvera, ostrzeżenia o sztywności,  
-  - integracja z `SimulationConfig` i zachowanie kompatybilności z manual/solve_ivp.
-
-- **(7)** Stworzyć kompleksowy benchmark backendów → `docs/PERF_BACKENDS.md`  
-  - skrypt `scripts/bench_backends.py`,  
-  - scenariusze: min. 2–3 różne use-case (krótki, długi, “trudny”),  
-  - pomiar czasu, liczby kroków, rozbieżności względem referencji,  
-  - raport: tabele + wykresy (czas vs backend, błąd vs backend).
-
-- **(8)** Przygotować szkielet backendu JAX (bez wymogu pełnej optymalizacji)  
-  - API kompatybilne z `ode_backends` (ten sam interfejs),  
-  - konfiguracja w `SimulationConfig`,  
-  - testy jednostkowe (czy odpala się, czy poprawnie przyjmuje dane),  
-  - opis w `py_lib.md`, że to backend perspektywiczny (pod future wektorowe/auto-diff).
-
----
-
-## Blok 2 – Fizyka 1D (pseudo-1D) (zadania 9–13)
-
-**Zakres:** tor w stronę modelu 1D, eksperymentalny, ale realny. 
-
-- **(9)** Napisać specyfikację modelu 1D → `docs/MODEL_1D_SPEC.md`  
-  - jakie wielkości śledzimy: T(x,t), alpha(x,t), rho(x,t), ewentualnie ciśnienie lokalne,  
-  - model ventów i warunków brzegowych (ściana formy vs środek),  
-  - wymagania numeryczne (liczba warstw, typ schematu, stabilność).
-
-- **(10)** Rozszerzyć `SimulationConfig` o `dimension` (`"0D"` / `"1D_experimental"`)  
-  - pełna kompatybilność w core, CLI, raportach,  
-  - 0D pozostaje w pełni wspieranym standardem (domyślny path w każdej warstwie).
-
 - **(11)** Zaimplementować pseudo-1D w `core/simulation_1d.py`  
   - kilka–kilkanaście warstw w grubości formy,  
   - przewodnictwo między warstwami oraz wymiana z formą,  
