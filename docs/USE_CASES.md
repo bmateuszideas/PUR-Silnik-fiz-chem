@@ -156,3 +156,18 @@ print("Nowe nastawy:", best.T_polyol_in_C, best.T_iso_in_C, best.T_mold_init_C, 
       --samples 40 \
       --t-cycle-max 600
   ```
+
+---
+
+## Generowanie raportu z symulacji/optimizacji
+- CLI `run-sim` moze zapisac raport Markdown z KPI i wykresami (`--report reports/use_case_1.md`); pliki PNG trafiaja do katalogu raportu.
+- Wymagane: `matplotlib` (patrz `py_lib.md`). Przy braku biblioteki CLI wypisze komunikat.
+- Przyklad:
+  ```bash
+  pur-mold-twin run-sim \
+      --scenario configs/scenarios/use_case_1.yaml \
+      --system SYSTEM_R1 \
+      --quality configs/quality/default.yaml \
+      --output table \
+      --report reports/use_case_1.md
+  ```
