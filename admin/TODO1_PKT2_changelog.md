@@ -10,3 +10,8 @@ Historia zmian wykonanych przez Copylota w ramach sekcji 2 `todo1.md`.
 - Dodanie systemow TDS: `configs/systems/system_R1.yaml` (bez pentanu) i `configs/systems/system_M1.yaml` (z pentanem) wraz z metadanymi.
 - Aktualizacja README (sekcja 3.1) o wskazanie katalogu `configs/systems` i powiazanie z modelami Material DB.
 - Odnotowanie wykonania sekcji 2 w `todo1.md` (checkboxy + referencje do plikow).
+
+## 2025-12-02
+- Dodano metodę `MaterialSystem.validate_required_fields()` do sygnalizowania brakujących pól wejściowych.
+- Dopisano komentarze w `configs/systems/jr_purtec_catalog.yaml` oraz wskazówki w `configs/scenarios/use_case_1.yaml` o wymaganych danych i jednostkach.
+- Utworzono `configs/README.md` z listą pól wymaganych/opcjonalnych oraz minimalnymi i pełnymi przykładami konfiguracji; link w `docs/STRUCTURE.md`.

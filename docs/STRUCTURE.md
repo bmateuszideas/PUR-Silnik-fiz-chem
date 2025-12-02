@@ -109,6 +109,7 @@ pur-mold-twin/
 
 ### Wytyczne dla katalogow
 1. **configs/**
+   - `configs/README.md`: przewodnik pól wymaganych/opcjonalnych + minimalne i pełne przykłady YAML.
    - `configs/systems/system_M1.yaml`: opis par poliol/izo + parametry docelowe (ładowane przez `material_db.loader` z ruamel.yaml).
    - `configs/scenarios/*.yaml`: kompletne scenariusze (`system_id`, `process`, `mold`, `quality`, opcjonalnie `simulation`), ładowane przez `pur_mold_twin.configs.load_process_scenario`.
    - `configs/quality/*.yaml`: stand-alone `QualityTargets` (preset CLI/testów), ładowane przez `load_quality_preset`.

@@ -1,3 +1,4 @@
+# See configs/README.md for required vs optional fields and units (°C, bar on input -> SI in solver).
 system_id: SYSTEM_R1
 
 process:
