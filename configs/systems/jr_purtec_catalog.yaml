@@ -1,3 +1,7 @@
+# NOTE: Fields such as `oh_number_mgKOH_per_g`, `water_fraction`, and `pentane_fraction`
+# are required by the solver; keep `null` only when the TDS/SDS lacks data and add
+# a short comment explaining the gap. Before calibration or production runs, replace
+# `null` with measured values so Material DB validation can enforce completeness.
 ---
 system_id: elastoflex_w_5165_149
 description: "BASF Elastoflex W 5165/149 – moulded flexible foam (seat cushions/backrests)"
@@ -10,6 +14,7 @@ polyol:
   viscosity_mPa_s: null
   water_fraction: null
   pentane_fraction: null
+  # OH number and water/pentane fractions not listed in the TDS; keep placeholders until lab data is added.
   cream_time_s: 11
   gel_time_s: null
   rise_time_s: 80

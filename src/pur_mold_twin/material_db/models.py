@@ -156,6 +156,45 @@ class MaterialSystem:
 
         return self.polyol.pentane_fraction > 0
 
+    def validate_required_fields(self) -> None:
+        """Raise an error when critical fields required by the solver are missing."""
+
+        missing: list[str] = []
+
+        if self.polyol.oh_number_mgKOH_per_g is None:
+            missing.append("polyol.oh_number_mgKOH_per_g")
+        if self.polyol.functionality is None:
+            missing.append("polyol.functionality")
+        if self.polyol.density_kg_per_m3 is None:
+            missing.append("polyol.density_kg_per_m3")
+        if self.polyol.viscosity_mPa_s is None:
+            missing.append("polyol.viscosity_mPa_s")
+        if self.polyol.water_fraction is None:
+            missing.append("polyol.water_fraction")
+        if self.polyol.pentane_fraction is None:
+            missing.append("polyol.pentane_fraction")
+
+        if self.isocyanate.nco_percent is None:
+            missing.append("isocyanate.nco_percent")
+        if self.isocyanate.functionality is None:
+            missing.append("isocyanate.functionality")
+        if self.isocyanate.density_kg_per_m3 is None:
+            missing.append("isocyanate.density_kg_per_m3")
+        if self.isocyanate.viscosity_mPa_s is None:
+            missing.append("isocyanate.viscosity_mPa_s")
+
+        if self.foam_targets.rho_free_rise_target is None:
+            missing.append("foam_targets.rho_free_rise_target")
+        if self.foam_targets.rho_moulded_target is None:
+            missing.append("foam_targets.rho_moulded_target")
+        if self.mechanical_targets.h_24h_target_shore is None:
+            missing.append("mechanical_targets.h_24h_target_shore")
+
+        if missing:
+            raise ValueError(
+                f"MaterialSystem '{self.system_id}' is missing required fields: {', '.join(missing)}"
+            )
+
     @classmethod
     def from_dict(cls, data: dict) -> "MaterialSystem":
         return cls(
