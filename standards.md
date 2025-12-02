@@ -67,3 +67,36 @@ Plik musi zawierac co najmniej dwa scenariusze utrzymywane w zgodzie z API i zak
    - Core Engine: zbyt niskie `alpha_demold` / `H_demold`, `rho_moulded` poza zakresem, `p_max > p_max_allowable`, wysokie `defect_risk` z diagnozami (temperatury, RH, vent, pentan).
    - Process Optimizer: zmienne (`T_polyol_in`, `T_iso_in`, `T_mold_init`, `t_demold`, ew. `pentane_pct`), constraints (`p_max`, `alpha_demold`, `H`, `rho`, `t_cycle_max`, `defect_risk_max`), funkcja celu (min `t_demold`, drugorzednie min `p_max` i wrazliwosc na RH).
    - Wyjscie: nowy zestaw nastaw (temperatury, `t_demold`, korekta `pentane_pct`), prognozowane `p_max`, `H_demold`, `H_24h`, `rho_moulded`, `defect_risk`, opis poprawy.
+
+## 7. Backend ODE i tolerancje numeryczne
+- Backend ODE implementujemy jako oddzielne strategie (np. `manual`, `solve_ivp`, `sundials`, w przyszlosci `jax`) pod wspolnym interfejsem (np. w `core/ode_backends.py`); `core/simulation.py` nie zawiera logiki specyficznej dla backendu.
+- Kazdy backend:
+  - ma wlasna konfiguracje tolerancji (`rtol`, `atol`, limity krokow/czasu) w `SimulationConfig` lub dedykowanych strukturach,
+  - raportuje czytelne bledy (brak biblioteki, problemy z konwergencja, przekroczenie limitu krokow) i nie zawiesza procesu.
+- Porownanie backendow:
+  - wyniki backendow alternatywnych (SUNDIALS, JAX) porownujemy z referencja (manual/`solve_ivp`) na profilach (`alpha`, `T_core`, `p_total`, `rho`) z tolerancjami z `docs/MODEL_OVERVIEW.md`,
+  - benchmarki (czas, liczba krokow, roznice w profilach) dokumentujemy w `docs/PERF_BACKENDS.md` oraz testujemy skryptami w `scripts/`.
+- Domyslny backend pozostaje stabilny i wspierany w CI; backendy eksperymentalne oznaczamy jako extras w `pyproject.toml` i sprawdzamy oddzielnie.
+
+## 8. ETL vs konektory danych
+- Konektor (np. modul SQL/REST) jest odpowiedzialny za pobranie surowych danych z zewnetrznego systemu (baza, API, plik); ETL (`src/pur_mold_twin/data/etl.py`) jest odpowiedzialny za transformacje do wewnetrznych modeli (`ProcessConditions`, schema datasetu) i walidacje.
+- Zasady:
+  - konektory nie implementuja logiki biznesowej ani fizyki; ograniczaja sie do mapowania zewnetrznych struktur na surowe rekordy,
+  - ETL nie implementuje logiki I/O specyficznej dla danego systemu (DSN, endpointy, autoryzacja) – operuje na abstrakcyjnych ramkach danych lub plikach wewnetrznych,
+  - kontrakty danych (kolumny, typy) sa zdefiniowane w `data/schema.py` i dokumentowane w `docs/ML_LOGGING.md` / `docs/CALIBRATION.md`.
+- Przy projektowaniu nowych integracji:
+  - najpierw definiujemy schema i kontrakt ETL,
+  - nastepnie dopisujemy konektor, ktory dostarcza dane w tym kontrakcie,
+  - testy integracyjne sprawdzaja caly przeplyw: konektor -> ETL -> features/dataset.
+
+## 9. Logging (nazewnictwo i moduly)
+- Standardowy logger aplikacyjny:
+  - konfiguracja i pobieranie loggera odbywa sie przez `src/pur_mold_twin/utils/logging.py` (`configure_logging`, `get_logger`),
+  - w modulach produkcyjnych importujemy `get_logger` z `..utils` i tworzymy logger modulu: `LOGGER = get_logger(__name__)`.
+- Pakiet `src/pur_mold_twin/logging/`:
+  - przechowuje logi symulacji oraz funkcje do budowy feature store (`logging/logger.py`, `logging/features.py`),
+  - nie nadpisuje standardowego modulu `logging` z Pythona.
+- Zasady:
+  - nie tworzymy wlasnych modulow o nazwie `logging.py` poza `utils/logging.py`,
+  - nie nadpisujemy globalnie konfiguracji `logging.basicConfig` poza `configure_logging`,
+  - nazwy loggerow trzymamy pod przestrzenia `pur_mold_twin.*` (ustawiana w `LOGGER_NAME`).

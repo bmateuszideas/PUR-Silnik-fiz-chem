@@ -85,3 +85,10 @@ Instalowane tylko dla developmentu/CI (`pur-mold-twin[dev]`):
 3. Dev -> `[dev]` (`pytest`, `pytest-cov`, `mypy`, `ruff`, `black`).
 
 Core dziala od razu po `pip install pur-mold-twin`; ML/back-endy specjalne sa opt-in.
+
+---
+
+## 8. Extras backendowe (TODO3)
+
+- `pur-mold-twin[sundials]` -> `scikits.odes>=2.7` (opcjonalny backend SUNDIALS, wymagany dla backendu `sundials` w `core/ode_backends.py`).
+- `pur-mold-twin[jax]` -> `jax>=0.4`, `diffrax>=0.5` (eksperymentalny backend JAX, przeznaczony do prac TODO3+).

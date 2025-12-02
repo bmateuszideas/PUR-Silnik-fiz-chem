@@ -42,3 +42,43 @@ Zakres: kontrola spojnosci repo z `todo1.md` (szczegolnie §13) oraz weryfikacja
 
 ## 4. Podsumowanie
 Workflow (TODO1 -> README -> docs -> src) jest spójny dla paczek (a–d). Po wprowadzeniu placeholderow i zasad przechowywania danych §13 wymaga juz tylko dopracowania testow i CLI, ale dokumentacja pozostaje zgodna z rzeczywistoscia.
+## Faza 3 - Advanced backends & Produkt 1.0 (TODO3)
+
+### Cele biznesowe
+- Udostepnienie stabilnego, skalowalnego silnika predykcyjnego klasy Digital Twin PUR, gotowego do pilota u klienta.
+- Latwa integracja z istniejacymi systemami klienta (logi procesu, bazy danych, narzedzia analityczne) przez CLI/API/serwis.
+- Wsparcie decyzji technologicznych (nastawy, czas w formie, ryzyka cisnienia/defektow) z uzyciem core + optimizer + ML.
+
+### Cele techniczne
+- Backend ODE:
+  - wyodrebniony interfejs backendow w `core/ode_backends.py` (strategy pattern),
+  - implementacja backendu SUNDIALS i przygotowanie interfejsu pod JAX,
+  - benchmarki czasu/jakosci backendow na reprezentatywnych scenariuszach (`docs/PERF_BACKENDS.md`).
+- Fizyka:
+  - utrzymanie stabilnosci i regresji 0D (golden fixtures),
+  - przygotowanie struktury danych i API pod pseudo-1D (TODO4) bez lamiania kontraktow klienta.
+- Integracje:
+  - konektory danych (np. SQL/REST) nad istniejacym ETL (`data/etl.py`),
+  - ujednolicone schematy danych w `data/schema.py` dla logow i datasetow ML.
+- ML:
+  - domkniety pipeline ML 2.0 (trenowanie, ewaluacja, inference),
+  - podstawowy monitoring driftu danych i modeli (`ml/drift.py`, CLI `check-drift`).
+- Produkt:
+  - referencyjny serwis API (np. FastAPI) owijajacy core/optimizer/raporty z OpenAPI,
+  - tryb operatora w CLI/API z widokiem na KPI i statusy,
+  - release workflow z publikacja na TestPyPI oraz smoke-testem E2E po instalacji.
+
+### Kryteria DONE dla TODO3 (produkt 1.0)
+- Backend ODE:
+  - co najmniej trzy backendy (manual, `solve_ivp`, SUNDIALS) pod wspolnym interfejsem,
+  - benchmarki i tolerancje numeryczne opisane w `docs/PERF_BACKENDS.md` i pokryte testami.
+- Core i fizyka:
+  - wszystkie istniejace golden fixtures i testy regresyjne przechodza po wprowadzeniu nowych backendow i przygotowaniu pseudo-1D,
+  - API core/optimizer/CLI pozostaje kompatybilne z dokumentacja i use-case.
+- Integracje i ML:
+  - dostepne sa co najmniej dwa zrodla danych (plikowe + SQL/API) spiete z ETL,
+  - pipeline ML 2.0 (trening, ewaluacja, inference) dziala na realnym dataset, a drift danych moze byc oceniony przez CLI/report.
+- Produkt:
+  - istnieje referencyjna implementacja serwisu (np. FastAPI) z udokumentowanym OpenAPI,
+  - `pip install pur-mold-twin` z oficjalnego kanalu + smoke-test E2E przechodza,
+  - `README_VERS.md` oraz `docs/ROADMAP_TODO3.md` odzwierciedlaja stan produktu 1.0.

@@ -169,7 +169,7 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
 - ML jest opcjonalne; zaleznosci instaluje sie jako extras `pur-mold-twin[ml]`, a CLI komunikuje brak modulow ML.
 
 ## 14. CLI Quickstart (`pur-mold-twin`)
-- Po instalacji pakietu (patrz `py_lib.md`) dostepna jest aplikacja Typer (`pur-mold-twin`) z komendami `run-sim` i `optimize`.
+- Po instalacji pakietu (patrz `py_lib.md`) dostepna jest aplikacja Typer (`pur-mold-twin`) z komendami `run-sim` i `optimize` oraz dodatkowymi narzedziami (`build-features`, `import-logs`, `train-ml` po TODO3).
 - `run-sim` (tabela KPI na stdout, JSON/CSV lokalnie):
   ```bash
   pur-mold-twin run-sim \
@@ -180,7 +180,7 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
       --save-json out/use_case_1.json \
       --export-csv out/use_case_1_profiles.csv
   ```
-  - Kluczowe flagi: `--scenario/-s`, `--system/-y`, `--quality/-q`, `--systems/-c`, `--output {json|table}`, `--save-json`, `--export-csv`, `--backend`, `--verbose`.
+  - Kluczowe flagi: `--scenario/-s`, `--system/-y`, `--quality/-q`, `--systems/-c`, `--output {json|table}`, `--save-json`, `--export-csv`, `--backend`, `--verbose`, `--mode {expert|operator}`, `--with-ml`.
 - `optimize` (random search na scenariuszu referencyjnym):
   ```bash
   pur-mold-twin optimize \
@@ -190,7 +190,7 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
       --t-cycle-max 600
   ```
   - Flagi: `--samples/-n`, `--seed`, `--t-cycle-max`, `--prefer-lower-pressure`, `--systems`, `--quality`, `--output {json|table}`, `--save-json`, `--export-csv`, `--verbose`.
-- Szczegoly dot. formatow wyjscia oraz przeplywu YAML -> Material DB -> core opisane sa w `docs/USE_CASES.md`.
+- Szczegoly dot. formatow wyjscia oraz przeplywu YAML -> Material DB -> core opisane sa w `docs/USE_CASES.md`. Tryb API/serwisowy opisany jest w `docs/API_REST_SPEC.md` (referencyjny serwis FastAPI w `scripts/service_example.py`).
 
 ## Tests / Usage
 

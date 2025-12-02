@@ -146,6 +146,22 @@ def test_run_sim_cli_with_verbose_flag():
 
 
 @pytest.mark.skipif(not CLI_DEPS_AVAILABLE, reason="CLI deps (pydantic/ruamel) not installed")
+def test_run_sim_cli_operator_mode_table():
+    result = runner.invoke(
+        app,
+        [
+            "run-sim",
+            "--scenario",
+            "configs/scenarios/use_case_1.yaml",
+            "--mode",
+            "operator",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "KPI Summary" in result.stdout
+
+
+@pytest.mark.skipif(not CLI_DEPS_AVAILABLE, reason="CLI deps (pydantic/ruamel) not installed")
 def test_optimize_cli_runs_with_few_samples():
     result = runner.invoke(
         app,

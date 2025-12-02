@@ -23,6 +23,8 @@ dependencies = [
 
 [project.optional-dependencies]
 ml = ["scikit-learn>=1.3"]
+sundials = ["scikits.odes>=2.7"]
+jax = ["jax>=0.4", "diffrax>=0.5"]
 dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
@@ -35,8 +37,9 @@ dev = [
 pur-mold-twin = "pur_mold_twin.cli.main:main"
 
 [project.urls]
-homepage = "https://example.com/pur-mold-twin"
-repository = "https://example.com/pur-mold-twin/repo"
+homepage = "https://github.com/pur-mold-twin/pur-mold-twin"
+repository = "https://github.com/pur-mold-twin/pur-mold-twin"
+documentation = "https://github.com/pur-mold-twin/pur-mold-twin/tree/main/docs"
 
 [tool.setuptools.packages.find]
 where = ["src"]

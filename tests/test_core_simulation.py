@@ -221,3 +221,39 @@ def test_invalid_input_raises_value_error():
             RH_ambient=0.5,
             mixing_eff=0.9,
         )
+
+
+def test_sundials_backend_raises_clear_error_when_unavailable() -> None:
+    simulator = MVP0DSimulator(SimulationConfig(backend="sundials"))
+    process = _build_process()
+    mold = _build_mold(process)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        simulator.run(SYSTEM_R1, process, mold, TEST_QUALITY)
+
+    msg = str(excinfo.value).lower()
+    assert "sundials" in msg
+
+
+def test_jax_backend_requires_extras() -> None:
+    simulator = MVP0DSimulator(SimulationConfig(backend="jax"))
+    process = _build_process()
+    mold = _build_mold(process)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        simulator.run(SYSTEM_R1, process, mold, TEST_QUALITY)
+
+    msg = str(excinfo.value).lower()
+    assert "jax" in msg
+
+
+def test_dimension_1d_equals_0d_for_single_layer() -> None:
+    base_cfg = SimulationConfig()
+    sim_0d = MVP0DSimulator(base_cfg)
+    sim_1d = MVP0DSimulator(base_cfg.model_copy(update={"dimension": "1d_experimental", "layers_count": 1}))
+    process = _build_process()
+    mold = _build_mold(process)
+    result_0d = sim_0d.run(SYSTEM_R1, process, mold, TEST_QUALITY)
+    result_1d = sim_1d.run(SYSTEM_R1, process, mold, TEST_QUALITY)
+    assert abs(result_0d.rho_moulded - result_1d.rho_moulded) <= 5.0
+    assert abs(result_0d.p_max_Pa - result_1d.p_max_Pa) <= 5.0e4
