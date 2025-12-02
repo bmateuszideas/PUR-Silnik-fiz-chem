@@ -87,6 +87,27 @@ def test_run_sim_cli_table_and_csv():
 
 
 @pytest.mark.skipif(not CLI_DEPS_AVAILABLE, reason="CLI deps (pydantic/ruamel) not installed")
+def test_run_sim_cli_invalid_report_path(tmp_path):
+    invalid_parent = tmp_path / "report_target"
+    invalid_parent.write_text("blocking file")
+    report_path = invalid_parent / "report.md"
+
+    result = runner.invoke(
+        app,
+        [
+            "run-sim",
+            "--scenario",
+            "configs/scenarios/use_case_1.yaml",
+            "--report",
+            str(report_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Invalid report path" in result.stderr
+
+
+@pytest.mark.skipif(not CLI_DEPS_AVAILABLE, reason="CLI deps (pydantic/ruamel) not installed")
 def test_run_sim_cli_with_verbose_flag():
     result = runner.invoke(
         app,
