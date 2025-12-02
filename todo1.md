@@ -4,6 +4,10 @@ Lista zadan dla Core Engine i Process Optimizer (MVP i kolejne fazy). Wszystko w
 
 > Notatka: po kazdej pracy nad konkretnym punktem TODO1 dopisz wpis do odpowiadajacego `admin/TODO1_PKT{n}_changelog.md` (data, lista zmodyfikowanych plikow, krotki opis celu). Jezeli nie mozesz wykonac kroku, nie zgaduj wyniku - opisz problem w tym samym changelogu i dodaj pod danym podpunktem linie `> Problem: ...` do czasu rozwiazania.
 
+## Status faz MVP (2025-12-12)
+- Fazy 1-3 (MVP 0D z cisnieniem/vent, oknem demold i diagnostyka) wraz z optimizerem i CLI Typer sa dostarczone i pokryte testami regresyjnymi (`tests/fixtures/use_case_1_output.json`).
+- Zalegle prace przechodza do TODO2: kalibracja na realnych datasetach (zgodnie z `docs/CALIBRATION.md`), rozszerzenie ML/raportow (`docs/ML_LOGGING.md`, `docs/USE_CASES.md`) oraz dalsze standardy CI/packaging.
+
 ## 1. Definicja modelu i wymagania
 - [x] Sformalizowac liste zjawisk (chemia, cieplo, ekspansja, cisnienie, odpowietrzniki, twardosc, demold). -> `docs/MODEL_OVERVIEW.md`
 - [x] Zdefiniowac pelna specyfikacje I/O (nazwy, jednostki, zakresy). -> `docs/MODEL_OVERVIEW.md`

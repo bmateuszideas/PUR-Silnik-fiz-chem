@@ -18,25 +18,27 @@ Zakres: kontrola spojnosci repo z `todo1.md` (szczegolnie §13) oraz weryfikacja
 - Raporty: `run-sim --report` generuje raport Markdown + wykresy (matplotlib); dokumentacja w `docs/USE_CASES.md`.
 - Packaging/CI: `pyproject.toml` z dependencies/extras i entry-pointem `pur-mold-twin`; prosty workflow `.github/workflows/ci.yml` uruchamia `pytest`.
 
+## 2025-12-12
+- Sprawdzono spojnosc sekcji 10–15 `readme.md` z aktualna struktura (`docs/STRUCTURE.md`) oraz plikami CLI/testow i zaktualizowano referencje.
+- Status faz: MVP 0D (fazy 1–3: core z cisnieniem/vent, oknem demold i diagnostyka) oraz optimizer + CLI Typer sa dostarczone; dalsze prace (kalibracja danych, rozszerzenia ML/raportow/CI) sa kontynuowane w TODO2.
+- Uporzadkowano TODO1: sekcja 13 traktowana jako domknieta; utrzymanie dokumentacji/standardow prowadzone w istniejacych plikach.
+
 ## 1. Stan TODO1
-- §1-12 oznaczone jako ukonczone i faktycznie posiadaja odpowiadajace pliki/kod (`docs/MODEL_OVERVIEW.md`, `src/pur_mold_twin/core`, `docs/CALIBRATION.md`, `docs/ML_LOGGING.md`).
-- §13 (`Dokumentacja i standardy`) pozostaje otwarty: README/standards aktualne, ale testy i CLI istnieja w wersji startowej (trzeba je rozwinac funkcjonalnie).
+- §1-13 oznaczone jako ukonczone i potwierdzone w repo (`docs/MODEL_OVERVIEW.md`, `docs/STRUCTURE.md`, `src/pur_mold_twin/core`, `docs/CALIBRATION.md`, `docs/ML_LOGGING.md`).
+- Rozbudowa testow/CLI/raportow przechodzi do TODO2 (kalibracja datasetow, ML/ETL, CI/packaging) zgodnie z notatkami w README i dokumentacji.
 
 ## 2. Czy README odzwierciedla rzeczywistosc?
 **Zgodne**
-- Sekcje 1–13 opisujace problem, dane, core, optimizer, kalibracje i ML odsyłaja do realnego kodu/dokumentow.
-- README zawiera notatki o CLI/testach jako paczce w budowie.
+- Sekcje 1–15 opisuja aktualny kod (core/optimizer/diagnostyka/CLI Typer/raporty/ETL/ML) i odsyłaja do istniejacych modulow oraz `docs/STRUCTURE.md`/`docs/USE_CASES.md`.
+- Status w sekcji 10 odpowiada bieżącemu MVP 0D z optimizerem, a sekcje 12–15 pokrywaja komendy CLI, raporty i konfiguracje testowe wykorzystywane w regresjach.
 
-**Rozbiezne (naprawione w tym FIXie)**
-1. Brak katalogu `tests/` -> dodano `tests/test_placeholder.py` (opisany w README/STRUCTURE jako krok przejsciowy).
-2. Brak `src/pur_mold_twin/cli/` -> dodano `cli/main.py` z komunikatem "CLI in progress".
-3. `.gitignore` nie mial wpisow dla `data/calibration/`, `data/ml/`, `reports/ml/` -> dodano.
-4. `standards.md` i README nie wspominaly o `docs/CALIBRATION.md` i `docs/ML_LOGGING.md` -> dopisano referencje oraz zasady danych.
+**Rozbiezne**
+- Brak nowych rozbiezności; historyczne placeholdery z §13 zostaly zastapione rzeczywistymi modulami (CLI, testy, raporty, ETL/ML).
 
 ## 3. Zalecenia dla §13
-1. Rozszerzyc placeholder tests -> docelowe `test_core_simulation.py`, `test_optimizer.py` (np. w kolejnej paczce).
-2. Rozwinac CLI w `src/pur_mold_twin/cli/main.py` (komendy `run-sim`, `optimize`).
-3. Utrzymywac `.gitignore` dla katalogow danych; realne logi przechowywac tylko lokalnie.
+1. Kolejne iteracje w TODO2: rozszerzyc dataset kalibracyjny i coverage ETL/ML zgodnie z `docs/CALIBRATION.md` i `docs/ML_LOGGING.md`.
+2. Przy nowych modulach raportowania/ML/CI aktualizowac `docs/STRUCTURE.md` oraz sekcje 10–15 README.
+3. Utrzymywac changelogi TODO1/TODO2 po kazdej zmianie w CLI/testach/regresjach.
 
 ## 4. Podsumowanie
 Workflow (TODO1 -> README -> docs -> src) jest spójny dla paczek (a–d). Po wprowadzeniu placeholderow i zasad przechowywania danych §13 wymaga juz tylko dopracowania testow i CLI, ale dokumentacja pozostaje zgodna z rzeczywistoscia.

@@ -7,6 +7,7 @@ pur-mold-twin/
 ├── README.md                # opis produktu + link do agent_instructions
 ├── README_VERS.md           # checkpointy/wersje
 ├── todo1.md                 # glowna lista zadan
+├── todo2.md                 # prace produktowe/rozszerzenia
 ├── py_lib.md                # stack/biblioteki (Python 3.14)
 ├── standards.md             # konwencje (root)
 ├── agent_instructions.md    # obowiazkowe dla AI
@@ -24,13 +25,27 @@ pur-mold-twin/
 ├── src/
 │   └── pur_mold_twin/
 │       ├── __init__.py
+│       ├── calibration/         # loader + fit/cost funkcje kalibracyjne
+│       │   ├── __init__.py
+│       │   ├── loader.py
+│       │   ├── cost.py
+│       │   └── fit.py
+│       ├── cli/
+│       │   ├── __init__.py
+│       │   ├── commands.py      # rejestr komend run-sim/optimize/build-features
+│       │   └── main.py          # Typer app + logging/version
+│       ├── configs/
+│       │   ├── __init__.py
+│       │   └── scenario_loader.py
 │       ├── material_db/
 │       │   ├── __init__.py
 │       │   ├── models.py        # Pydantic modele
 │       │   └── loader.py        # parser YAML/JSON
 │       ├── core/
 │       │   ├── __init__.py
-│       │   └── mvp0d.py        # aktualna implementacja core 0D (docelowo podzial na moduly)
+│       │   ├── mvp0d.py         # implementacja core 0D
+│       │   ├── simulation.py    # orchestration + CLI glue
+│       │   ├── gases.py/thermal.py/kinetics.py/hardness.py/types.py/utils.py
 │       ├── optimizer/
 │       │   ├── __init__.py
 │       │   ├── search.py
@@ -39,16 +54,38 @@ pur-mold-twin/
 │       │   ├── __init__.py
 │       │   ├── rules.py
 │       │   └── reporter.py
-│       ├── cli/
+│       ├── data/
 │       │   ├── __init__.py
-│       │   └── main.py         # placeholder CLI
+│       │   ├── dataset.py       # format logow/feature set
+│       │   ├── etl.py           # ETL z logow procesowych
+│       │   └── schema.py
+│       ├── logging/
+│       │   ├── features.py      # budowa feature z symulacji/logow
+│       │   └── logger.py        # konfiguracja logowania
+│       ├── ml/
+│       │   ├── __init__.py
+│       │   ├── baseline.py      # modele referencyjne (RF)
+│       │   └── train_baseline.py
+│       ├── reporting/
+│       │   ├── __init__.py
+│       │   ├── plots.py         # wykresy do raportu CLI
+│       │   └── report.py        # generacja raportu Markdown
 │       └── utils/
 │           ├── __init__.py
-│           └── units.py
+│           └── logging.py
 ├── tests/
 │   ├── __init__.py
+│   ├── conftest.py
+│   ├── fixtures/                # golden output (np. use_case_1)
+│   ├── data/                    # sample inputs dla ETL/logging
 │   ├── test_core_simulation.py
-│   └── test_optimizer.py
+│   ├── test_simulation_helpers.py
+│   ├── test_optimizer.py
+│   ├── test_cli.py
+│   ├── test_calibration*.py
+│   ├── test_etl.py / test_logging_features.py / test_ml_baseline.py
+│   ├── test_reporting.py
+│   └── test_material_loader.py / test_scenario_loader.py
 └── .github/
     └── workflows/ci.yml
 ```
@@ -62,8 +99,13 @@ pur-mold-twin/
 | `src/pur_mold_twin/core` | uzywany przez CLI i Optimizer | rdzen fiz-chem: oblicza profile oraz `SimulationResult` |
 | `src/pur_mold_twin/optimizer` | wywoluje `core.simulation` | steruje optymalizacja nastaw |
 | `src/pur_mold_twin/diagnostics` | wywolywany z `core.simulation` lub CLI | generuje ostrzezenia i `defect_risk` |
-| `src/pur_mold_twin/cli` | korzysta z `configs` -> `material_db` -> `core`/`optimizer` | interfejs uzytkownika |
-| `tests/` | zalezy od `src` | weryfikuje moduly |
+| `src/pur_mold_twin/cli` | korzysta z `configs` -> `material_db` -> `core`/`optimizer`/`reporting`/`data` | interfejs Typer (run-sim, optimize, build-features, raporty) |
+| `src/pur_mold_twin/calibration` | korzysta z danych pomiarowych i `core` | fit parametrow kinetyki/ciepla/pentanu |
+| `src/pur_mold_twin/data` | czyta logi procesowe / wyniki symulacji | ETL i schemat danych pod ML |
+| `src/pur_mold_twin/logging` | uzywany przez ETL/CLI | budowa featur i logger aplikacyjny |
+| `src/pur_mold_twin/ml` | uzywa featur z `data`/`logging` | modele bazowe ML |
+| `src/pur_mold_twin/reporting` | uzywany przez CLI | generuje raporty Markdown + wykresy |
+| `tests/` | zalezy od `src` | regresje core/optimizer/CLI/ETL/ML/raportowania |
 
 ### Wytyczne dla katalogow
 1. **configs/**
@@ -72,22 +114,21 @@ pur-mold-twin/
    - `configs/quality/*.yaml`: stand-alone `QualityTargets` (preset CLI/testów), ładowane przez `load_quality_preset`.
 2. **src/pur_mold_twin/**
    - Produkcyjny kod trafia tutaj; eksperymenty w osobnych branchach/folderach poza `src`.
-   - Kazdy modul (material_db/core/optimizer/diagnostics/cli/utils) ma odpowiadajace testy w `tests/`.
+   - Kazdy modul (material_db/core/optimizer/diagnostics/cli/calibration/data/logging/ml/reporting/utils) ma odpowiadajace testy regresyjne w `tests/`.
    - `core.simulation` skleja backendy solvera (manual/solve_ivp) i korzysta z modulow pomocniczych (`kinetics`, `thermal`, `gases`, `hardness`) – brak bezposrednich importow CLI/optimizer.
 3. **docs/**
    - `MODEL_OVERVIEW.md` przechowuje opis rownan/zakresu.
    - `STRUCTURE.md` aktualizujemy przy zmianie layoutu.
    - Kazdy nowy dokument wplywajacy na workflow agenta musi byc podlinkowany w `agent_instructions.md`.
 4. **tests/**
-   - Organizacja wg modulu (`test_core_simulation.py`, `test_pressure_model.py` itd.).
-   - Testy importuja tylko publiczne API (np. `from pur_mold_twin.core.simulation import run_simulation`).
-   - Jezeli test wymaga danych, korzysta z malych fixture (dodaj `tests/fixtures/` jezeli potrzebne).
+   - Organizacja wg modulu (`test_core_simulation.py`, `test_optimizer.py`, `test_cli.py`, `test_calibration*.py`, ETL/ML/raporty).
+   - Testy importuja publiczne API (np. `from pur_mold_twin.core.simulation import run_simulation`).
+   - Fixture regresyjne w `tests/fixtures/` i przykladowe logi w `tests/data/` pozwalaja weryfikowac profile i raporty.
 5. **agent_instructions.md / README**
    - Przy kazdej zmianie struktury (nowe katalogi, przenosiny) aktualizujemy oba pliki, aby Copilot/Codex znal aktualny layout.
 
 ### Pliki w budowie
-- `src/pur_mold_twin/cli/main.py` - CLI placeholder (docelowo Typer/argparse).
-- `tests/test_core_simulation.py`, `tests/test_optimizer.py` - podstawowe testy; będą rozszerzane o kolejne przypadki.
+- Rozwojowe paczki TODO2 obejmuja kalibracje datasetow, raportowanie i modele ML; struktura powyzej jest aktualna i wykorzystywana przez CLI/testy regresyjne.
 
 ### Notatki dla Codex/Copilot
 - Przed utworzeniem nowego katalogu upewnij sie, ze pasuje do listy powyzej.
