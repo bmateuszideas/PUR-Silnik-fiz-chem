@@ -95,3 +95,21 @@ Definition of Task 1 deliverables: physics scope, I/O specification, quality gat
 - Config and CLI: `ruamel.yaml`, `typer` (or fallback `argparse`).
 - Dev and QA: `pytest`.
 - Deferred extras (post-MVP or when justified): `thermo`, `CoolProp`, `Cantera`, `scikit-learn`, `pyomo`, `numba`, `pint-pandas`.
+- Solver backends: core uses a strategy-style module `core/ode_backends.py` with backends `manual` and `solve_ivp` in the base installation; optional backends (e.g. `sundials`, `jax`) are exposed via extras in `pyproject.toml` and must preserve regression parity with the reference backend.
+
+## 6. Experimental 1D (pseudo) – limitations & roadmap
+
+- Purpose: capture coarse thermal/kinetic gradients along the thickness of the foam, while keeping the external API identical to the 0D solver.
+- Activation: set `SimulationConfig.dimension="1d_experimental"` (optional `layers_count`, `foam_conductivity_W_per_mK`). When `dimension="0d"` (default), the existing solver path is used.
+- Implementation status:
+  - For `layers_count = 1` the 1D solver falls back to the classic 0D backend, ensuring regression parity.
+  - For `layers_count > 1` a simple explicit scheme is in place (layers with lumped kinetics + conduction between neighbours); results are considered exploratory only.
+- Limitations:
+  - Pressure and vent modelling remain global (0D) – no per-layer vent clogging yet.
+  - Lack of calibration data for spatial gradients; use only for qualitative analysis.
+  - Integration currently relies on the manual backend; support for `solve_ivp`/SUNDIALS/JAX in 1D is deferred.
+- Roadmap:
+  1. Add regression tests comparing 1D (`layers_count=1`) to 0D (already in place).
+  2. Extend `SimulationResult` / logging to expose per-layer profiles when available.
+  3. Improve conduction and vent sealing models, and validate against experimental data.
+  4. Update CLI/reporting/README to describe when 1D mode is appropriate once the experimental features stabilise.
