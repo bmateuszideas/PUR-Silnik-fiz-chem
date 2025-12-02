@@ -38,6 +38,9 @@ class MVP0DSimulator:
 
     def __init__(self, config: Optional[SimulationConfig] = None) -> None:
         self.config = config or SimulationConfig()
+        # Backwards-compat: expose the core simulation module on the simulator
+        # instance so older tests and callers can use `simulator.core_simulation`.
+        self.core_simulation = simulation
 
     def run(
         self,
