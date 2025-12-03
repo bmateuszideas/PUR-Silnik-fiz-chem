@@ -192,9 +192,9 @@ Przekształcenie obecnego MVP w **dojrzały, skalowalny, produkcyjny silnik pred
 
 - [x] **(21)** Dodać komendę CLI `train-ml`, która zarządza konfiguracją runów i zapisuje raport (metryki + metadata, git hash).  
 
-- [ ] **(22)** Dodać moduł inference `ml/inference.py` z:  
-      - **JEST** lazy-loading modeli i `attach_ml_predictions(...)`,  
-      - DO DOPIESZCZENIA: pełne wersjonowanie modeli (metadane w wynikach i raportach, zgodnie z TODO3).  
+- [x] **(22)** Dodać moduł inference `ml/inference.py` z:  
+      - **ZROBIONE** lazy-loading modeli i `attach_ml_predictions(...)`,  
+      - **ZROBIONE** pełne wersjonowanie modeli (models/manifest.json, metadata w wynikach, git hash tracking).  
 
 - [x] **(23)** Rozszerzyć CLI `run-sim` o flagę `--with-ml` i sekcję “ML predictions” w raportach / JSON.  
 
@@ -289,7 +289,7 @@ Statusy:
 | 19 | Formalny kontrakt ML output → `docs/ML_LOGGING.md` + diagram przepływu                                               | ☑ Zrobione           | Wysoki    | 3–4 h            | pełny opis pipeline’u ML                                                                       |
 | 20 | Rozbudować `ml/train_baseline.py` (kilka modeli + raporty metryk)                                                    | ☑ Zrobione           | Wysoki    | 12–16 h          | zapis modeli + raport Markdown                                                                 |
 | 21 | Komenda `train-ml` z pełnym raportem Markdown/HTML + git hash                                                        | ☑ Zrobione           | Wysoki    | 8–10 h           | CLI opakowuje training                                                                         |
-| 22 | Moduł inference + lazy-loading + wersjonowanie modeli → `ml/inference.py`                                            | 🟡 W toku            | Wysoki    | 8–10 h           | lazy-loading jest, wersjonowanie modeli wymaga rozbudowy                                       |
+| 22 | Moduł inference + lazy-loading + wersjonowanie modeli → `ml/inference.py`                                            | ☑ Zrobione           | Wysoki    | 8–10 h           | manifest.json, metadata w wynikach, feature compatibility                                      |
 | 23 | `run-sim --with-ml` + sekcja ML w raportach                                                                          | ☑ Zrobione           | Wysoki    | 6–8 h            | ML doklejane do JSON/raportów                                                                  |
 | 24 | Testy regresyjne ML (syntetyczny dataset → train → metryki)                                                          | ☑ Zrobione           | Wysoki    | 6–8 h            | `tests/test_ml_training.py` + pokrewne                                                         |
 | 25 | Specyfikacja REST API → `docs/API_REST_SPEC.md`                                                                      | ☑ Zrobione           | Wysoki    | 4–6 h            | `/simulate`, `/optimize`, `/ml/predict`, `/health`, `/version`                                 |
