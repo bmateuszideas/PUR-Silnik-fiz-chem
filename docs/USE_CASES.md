@@ -36,8 +36,8 @@ Scenariusze uzycia zgodne z README/standards. Profile: `p_total(t)`, `p_air`, `p
 - `p_max ~ 3.5 bar @ 120 s`, `pressure_status=SAFE`, rozbicie: `p_air ~ 1.0`, `p_CO2 ~ 1.6`, `p_pentane ~ 0.9` bar.
 - Dla `t_demold=320 s`: `alpha_demold ~ 0.82`, `H_demold ~ 43 Shore`, `H_24h ~ 56 Shore`, `rho_moulded ~ 41 kg/m3`, `quality_status=OK`, `defect_risk ~ 0.03`.
 - Wilgotnosc: `water_from_polyol ~ 0.015 kg`, `water_from_RH_surface ~ 0.001 kg`, `water_eff ~ 0.016 kg`, `water_risk_score ~ 0.05` (SAFE).
-- Odpowietrzniki: `vent_eff` startuje z 1.0 i maleje do ~0.35 przy `t ~ 260 s`, `vent_closure_time ~ 265 s` (przy prostym clog-rate).
-- Diagnostyka: brak ostrzezen (mixing 0.9, cisnienie SAFE, vent zamyka sie po 260 s).
+- Odpowietrzniki: `vent_eff` startuje z 1.0 i maleje do ~0.35 przy `t ~ 260 s`, `vent_closure_time ~ 265 s` (wg parametru clog-rate).
+- Diagnostyka: brak ostrzezen (mixing_eff=0.9, cisnienie SAFE, vent zamyka sie po 260 s).
 - Okno demold: `t_demold_min ~ 280 s`, `t_demold_max ~ 420 s`, rekomendacja `t_demold_opt ~ 320 s`.
 
 ### Skrot
@@ -45,7 +45,7 @@ Scenariusze uzycia zgodne z README/standards. Profile: `p_total(t)`, `p_air`, `p
 - Kluczowe metryki: `p_max ~ 3.5 bar` (SAFE), `t_demold_opt ~ 320 s`, `alpha_demold ~ 0.82`, `H_demold ~ 43 Shore`, `H_24h ~ 55 Shore`, `rho_moulded ~ 41 kg/m3`, `defect_risk ~ 3%`.
 - Dokladnosc po kalibracji (opisowo): `t_demold_opt` +/-60 s, `rho_moulded` +/-10%, `p_max` +/-15%.
 
-- **Konfiguracje YAML**: scenariusz/test dla tego use-case jest dostępny jako `configs/scenarios/use_case_1.yaml`. CLI/ notebook moze go zaladowac:
+- **Konfiguracje YAML**: scenariusz/test dla tego use-case jest dostepny jako `configs/scenarios/use_case_1.yaml`. CLI lub notebook moze go zaladowac:
   ```python
   from pur_mold_twin.configs import load_process_scenario
   from pur_mold_twin.material_db.loader import load_material_catalog
@@ -107,14 +107,14 @@ Scenariusze uzycia zgodne z README/standards. Profile: `p_total(t)`, `p_air`, `p
 
 ### Krok 1 - ocena aktualnych nastaw
 - Czasy: `t_cream ~ 22 s`, `t_gel ~ 80 s`, `t_rise ~ 140 s`.
-- `T_core_max ~ 75 C` (za nisko).
+- `T_core_max ~ 75 C` (ponizej oczekiwanego poziomu).
 - `p_max ~ 5.8 bar @ 130 s` -> `pressure_status=OVER_LIMIT`.
   - Rozbicie: `p_air ~ 0.9`, `p_CO2 ~ 2.6`, `p_pentane ~ 2.3` bar.
-- `vent_eff` spada do ~0.1 przy `t ~ 50-60 s` (przytkane venty).
+- `vent_eff` spada do ~0.1 przy `t ~ 50-60 s` (ograniczona droznosc odpowietrznikow).
 - Dla `t_demold ~ 300 s`: `alpha_demold ~ 0.68`, `H_demold ~ 35 Shore`, `H_24h ~ 52 Shore`, `rho_moulded ~ 36 kg/m3`, `quality_status=FAIL`, `defect_risk ~ 0.60`.
-- Diagnoza: zimne komponenty/forma -> wolna kinetyka; wysoka RH -> wiecej `water_eff` -> nadmiar CO2; pentane 10% przy tych warunkach -> wysokie cisnienie; venty zamulaja sie wczesnie.
+- Diagnoza: niskie temperatury komponentow i formy spowalniaja kinetyke; wysoka RH zwieksza `water_eff`, co podbija generacje CO2; pentane 10% przy tych warunkach podnosi cisnienie; odpowietrzniki traca droznosc wczesnie.
 - Wilgotnosc: `water_from_polyol ~ 0.020 kg`, `water_from_RH_surface ~ 0.003 kg`, `water_eff ~ 0.023 kg`, `water_risk_score ~ 0.70` (HIGH).
-- Odpowietrzniki: `vent_closure_time ~ 58 s`, `vent_eff` < 0.05 -> brak ulatniania, przyczynia sie do wysokiego `p_pentane`.
+- Odpowietrzniki: `vent_closure_time ~ 58 s`, `vent_eff` < 0.05 -> brak efektywnego ulatniania, co zwieksza udzial `p_pentane`.
 - Diagnostyka: ostrzezenia dla niskiej twardosci demold, wysokiego cisnienia i wczesnego zamkniecia ventow -> `quality_status=FAIL`, `defect_risk ~ 0.60`.
 
 ### Krok 2 - definiowanie optymalizacji
