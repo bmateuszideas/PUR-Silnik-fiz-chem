@@ -1,16 +1,39 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Sequence, Callable, Optional, Any
+import logging
 
 try:  # SciPy is required only for the solve_ivp backend
-    from scipy.integrate import solve_ivp
+        from scipy.integrate import solve_ivp
 except ModuleNotFoundError:  # pragma: no cover
-    solve_ivp = None
+        solve_ivp = None
 
 from .kinetics import alpha_derivative, alpha_from_phi, arrhenius_multiplier
 from .thermal import initial_core_temperature
 from .utils import celsius_to_kelvin, linspace, zeros_like
 from .simulation import SimulationContext, Trajectory, step_heat_transfer, step_kinetics
+
+logger = logging.getLogger(__name__)
+
+"""
+ODE backends module
+
+Contract summary (also mirrored in docs/ODE_BACKEND_CONTRACT.md):
+- integrate_system(ctx, backend, **backend_kwargs) -> Trajectory
+- Expected behaviour: returns a `Trajectory` object with fields
+    `time_s`, `alpha`, `T_core_K`, `T_mold_K`, `phi` with lengths > 1.
+- Backends should, when possible, return values evaluated on the requested
+    time grid defined by `ctx.config.time_step_s` and `ctx.config.total_time_s`.
+    If a solver returns a different internal grid, the backend will attempt
+    to preserve solver results but emit diagnostics via `diag_callback` or the
+    module logger.
+
+Optional diagnostic callback:
+- Backends accept an optional keyword `diag_callback: Callable[[str, dict], None]`
+    passed through `integrate_system(..., diag_callback=callable)`. If present,
+    it will be called with short events such as `{"event": "sundials_complete", ...}`
+    to allow caller-side instrumentation.
+"""
 
 if TYPE_CHECKING:  # pragma: no cover
     from .types import SimulationConfig
@@ -26,7 +49,7 @@ def get_backend_name(config: "SimulationConfig") -> str:
     return backend
 
 
-def integrate_manual(ctx: SimulationContext) -> Trajectory:
+def integrate_manual(ctx: SimulationContext, **backend_kwargs) -> Trajectory:
     cfg = ctx.config
     time = linspace(0.0, cfg.total_time_s, cfg.steps())
     alpha = zeros_like(time)
@@ -64,7 +87,7 @@ def integrate_manual(ctx: SimulationContext) -> Trajectory:
     return Trajectory(time_s=time, alpha=alpha, T_core_K=T_core, T_mold_K=T_mold, phi=phi)
 
 
-def integrate_solve_ivp(ctx: SimulationContext) -> Trajectory:
+def integrate_solve_ivp(ctx: SimulationContext, **backend_kwargs) -> Trajectory:
     if solve_ivp is None:  # pragma: no cover
         raise RuntimeError("Backend 'solve_ivp' wymaga zainstalowanego pakietu scipy.")
 
@@ -123,10 +146,17 @@ def integrate_solve_ivp(ctx: SimulationContext) -> Trajectory:
     alpha = [alpha_from_phi(val, ctx.exponent) for val in phi]
     T_core = list(solution.y[1])
     T_mold = list(solution.y[2])
+    # diagnostics callback if provided
+    diag_callback = backend_kwargs.get("diag_callback") if isinstance(backend_kwargs, dict) else None
+    if callable(diag_callback):
+        try:
+            diag_callback("solve_ivp_complete", {"success": bool(solution.success), "nfev": getattr(solution, 'nfev', None)})
+        except Exception:
+            logger.exception("diag_callback raised an exception")
     return Trajectory(time_s=list(solution.t), alpha=alpha, T_core_K=T_core, T_mold_K=T_mold, phi=phi)
 
 
-def integrate_sundials(ctx: SimulationContext) -> Trajectory:
+def integrate_sundials(ctx: SimulationContext, **backend_kwargs) -> Trajectory:
     try:  # pragma: no cover - dependency optional
         from scikits.odes import odeint
     except ModuleNotFoundError as exc:  # pragma: no cover
@@ -209,10 +239,17 @@ def integrate_sundials(ctx: SimulationContext) -> Trajectory:
     if len(time_series) != len(alpha):
         # fallback to requested time grid if solver returned different length
         time_series = _to_list(time)[: len(alpha)]
+    # diagnostics callback if provided
+    diag_callback = backend_kwargs.get("diag_callback") if isinstance(backend_kwargs, dict) else None
+    if callable(diag_callback):
+        try:
+            diag_callback("sundials_complete", {"nsteps": getattr(solution, 'nsteps', None), "len_values": len(alpha)})
+        except Exception:
+            logger.exception("diag_callback raised an exception")
     return Trajectory(time_s=time_series, alpha=alpha, T_core_K=T_core, T_mold_K=T_mold, phi=phi)
 
 
-def integrate_jax(ctx: SimulationContext) -> Trajectory:
+def integrate_jax(ctx: SimulationContext, **backend_kwargs) -> Trajectory:
     try:  # pragma: no cover - dependency optional
         import jax.numpy as jnp
         from jax import numpy as _jnp  # noqa: F401  # to emphasise requirement
@@ -269,7 +306,6 @@ def integrate_jax(ctx: SimulationContext) -> Trajectory:
     saveat = SaveAt(ts=jnp.array(time, dtype=jnp.float64))
     try:
         sol = diffeqsolve(
-            term,
             solver,
             t0=0.0,
             t1=cfg.total_time_s,
@@ -285,19 +321,25 @@ def integrate_jax(ctx: SimulationContext) -> Trajectory:
     alpha = [alpha_from_phi(val, ctx.exponent) for val in phi]
     T_core = [float(val[1]) for val in ys]
     T_mold = [float(val[2]) for val in ys]
+    # diagnostics callback if provided
+    diag_callback = backend_kwargs.get("diag_callback") if isinstance(backend_kwargs, dict) else None
+    if callable(diag_callback):
+        try:
+            diag_callback("jax_complete", {"len_values": len(phi)})
+        except Exception:
+            logger.exception("diag_callback raised an exception")
     return Trajectory(time_s=list(time), alpha=alpha, T_core_K=T_core, T_mold_K=T_mold, phi=phi)
 
 
-def integrate_system(ctx: SimulationContext, backend: str | None = None) -> Trajectory:
+def integrate_system(ctx: SimulationContext, backend: str | None = None, **backend_kwargs) -> Trajectory:
     if backend is None:
         backend = get_backend_name(ctx.config)
-
     if backend == "manual":
-        return integrate_manual(ctx)
+        return integrate_manual(ctx, **backend_kwargs)
     if backend == "solve_ivp":
-        return integrate_solve_ivp(ctx)
+        return integrate_solve_ivp(ctx, **backend_kwargs)
     if backend == "sundials":
-        return integrate_sundials(ctx)
+        return integrate_sundials(ctx, **backend_kwargs)
     if backend == "jax":
-        return integrate_jax(ctx)
+        return integrate_jax(ctx, **backend_kwargs)
     raise ValueError(f"Unknown simulation backend '{backend}'.")

@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ml = ["scikit-learn>=1.3"]
+ml = ["scikit-learn>=1.3", "joblib>=1.3"]
 sundials = ["scikits.odes>=2.7"]
 jax = ["jax>=0.4", "diffrax>=0.5"]
 dev = [
@@ -40,10 +40,6 @@ pur-mold-twin = "pur_mold_twin.cli.main:main"
 homepage = "https://github.com/pur-mold-twin/pur-mold-twin"
 repository = "https://github.com/pur-mold-twin/pur-mold-twin"
 documentation = "https://github.com/pur-mold-twin/pur-mold-twin/tree/main/docs"
-
-[tool.bump.todo3]
-phase = "3"
-notes = "Advanced backends, integrations, product 1.0"
 
 [tool.setuptools.packages.find]
 where = ["src"]
