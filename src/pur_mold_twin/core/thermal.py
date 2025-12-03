@@ -89,8 +89,14 @@ def compute_water_balance(
 
 
 def extra_water_volume_km(water_from_rh_kg: float) -> float:
-    """Convert additional RH-driven water mass to cubic meters."""
+    """Convert additional RH-driven water mass (kg) to water volume (m³).
 
+    Args:
+        water_from_rh_kg (float): Mass of water from RH in kilograms.
+
+    Returns:
+        float: Equivalent volume of water in cubic meters (m³).
+    """
     if water_from_rh_kg <= 0:
         return 0.0
     return water_from_rh_kg / LIQUID_WATER_DENSITY_KG_PER_M3
