@@ -1,8 +1,17 @@
 import pytest
 from pathlib import Path
 
-RUAMEL_AVAILABLE = True
-PYDANTIC_AVAILABLE = True
+try:
+    from ruamel.yaml import YAML  # noqa: F401
+    RUAMEL_AVAILABLE = True
+except ModuleNotFoundError:  # pragma: no cover
+    RUAMEL_AVAILABLE = False
+
+try:
+    import pydantic  # noqa: F401
+    PYDANTIC_AVAILABLE = True
+except ModuleNotFoundError:  # pragma: no cover
+    PYDANTIC_AVAILABLE = False
 
 from pur_mold_twin.material_db.loader import load_material_catalog, load_material_system
 

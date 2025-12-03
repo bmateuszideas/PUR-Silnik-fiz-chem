@@ -5,14 +5,12 @@ Ten plik jest „home screenem” dla kolejnego agenta/Copilota przejmujacego Fa
 ## 1. Co juz jest zrobione w TODO3
 
 Przed dalsza praca przeczytaj:
-
 - `agent_instructions.md`, `copilot_update_project_playbook.md`,
 - `readme.md`, `README_VERS.md`, `docs/STRUCTURE.md`, `docs/MODEL_OVERVIEW.md`,
 - `docs/ML_LOGGING.md`, `docs/CALIBRATION.md`, `docs/API_REST_SPEC.md`,
 - `todo3.md`, `docs/ROADMAP_TODO3.md`.
 
 Stan blokow TODO3 (wysoki poziom):
-
 - **Blok 0 – stan produktu i standardy (1–3)**: zrobione
   - `docs/ROADMAP_TODO3.md` opisuje stan produktu i cele TODO3,
   - `README_VERS.md` ma sekcje Faza 3 + Versioning & releases,
@@ -63,7 +61,6 @@ Stan blokow TODO3 (wysoki poziom):
 ## 2. Co zostalo do zrobienia (TODO3 – w praktyce)
 
 Lista z `todo3.md` jest szeroka; po tej iteracji pozostaja przede wszystkim:
-
 - Dopieszczenie pseudo-1D (Blok 2, zadania 11–12):
   - lepszy model przewodnictwa i walidacja profili T/alpha (osobny test `test_core_simulation_1d.py`),
   - ewentualne wlaczenie 1D do benchmarkow backendow.
@@ -125,7 +122,6 @@ Zakladamy Python 3.14, z repo w CWD.
 ## 5. Golden path dla reszty TODO3
 
 Sugerowana kolejnosc dla kolejnego agenta:
-
 1. **Pseudo-1D**: dopracowanie `core/simulation_1d.py` + testy regresyjne 1D.
 2. **ML 2.0**: spięcie `train-ml` jako komendy Typer i rozbudowa raportow (metrics + wykresy).
 3. **API**: dopelnienie `scripts/service_example.py` i ewentualne testy FastAPI (opcjonalne, w zaleznosci od srodowiska).
@@ -133,82 +129,4 @@ Sugerowana kolejnosc dla kolejnego agenta:
 5. **Drift E2E**: pelny test pipeline logi -> ETL -> ML -> drift (wykorzystujac istniejace testy jako szablon).
 
 Po zrealizowaniu powyzszych punktow TODO3 bedzie w praktyce gotowe do ogloszenia wersji 1.0.0 zgodnie z kryteriami z `README_VERS.md`.
-
-## 2a. Dokumenty i podzial odpowiedzialnosci
-
-| Dokument / plik                     | Co trzyma? (definicja)                                                                 | Czego tam nie wrzucamy / gdzie przenosimy |
-|------------------------------------|----------------------------------------------------------------------------------------|-------------------------------------------|
-| `README.md`                        | Opis problemu, tryby uzycia (lib/CLI/API), szybki onboarding dla ludzi                 | Szczegolowe backlogi i checklisty (-> `todo3.md`) |
-| `README_VERS.md`                   | Historia wersji, checkpointy, polityka release                                         | Biezace instrukcje operacyjne (-> `DEV_DASHBOARD_TODO3.md`) |
-| `todo3.md`                         | Status TODO3, tabela zadan, punktacja, postepy                                         | Codzienne instrukcje i golden path (-> ten dashboard) |
-| `DEV_DASHBOARD_TODO3.md`           | „Home screen” agenta: co czytac, szybkie komendy, zasady pracy, krok po kroku          | Szczegolowe uzgodnienia biznesowe (-> `README.md` / `docs/ROADMAP_TODO3.md`) |
-| `docs/ROADMAP_TODO3.md`            | Kontekst biznesowy TODO3, ryzyka, mapa funkcji                                         | Dane operacyjne o stanie testow (-> `todo3.md`) |
-| `docs/STRUCTURE.md`                | Odpowiedzialnosc katalogow/modules, entrypointy kodu                                   | Backlog prac (-> `todo3.md`) |
-| `docs/ML_EXTRAS.md`, `py_lib.md`   | Instrukcje instalacji extras, lista bibliotek                                          | Wyniki testow/CI (-> `README_VERS.md` / `todo3.md`) |
-| `agent_instructions.md`            | Reguly dla AI (co czytac, jak commitowac)                                              | Status TODO3 (-> `todo3.md`) |
-
-> **Mini-regula:** kiedy piszesz nowa instrukcje:
->
-> 1. Czy to ogolny opis produktu? → `README.md`.
-> 2. Czy to historia/kamienie milowe? → `README_VERS.md`.
-> 3. Czy to backlog/status TODO3? → `todo3.md`.
-> 4. Czy to praktyczny przewodnik dla developera? → `DEV_DASHBOARD_TODO3.md`.
-
-## 6. Snapshot CI + skrypty (2025-12-03)
-
-### Workflows (c/.github/workflows)
-
-- `ci.yml` – macierz 5 wersji Pythona × extras true/false, instaluje `[ml]` tylko gdy `extras=true`, uruchamia pytest + coverage + Codecov. Brak jeszcze osobnego kroku lint/format oraz brak lightweight smoke (tylko testy matrixowe).
-- `release.yml` – odpala sie na tagach `v*.*.*`, instaluje `[dev]`, uruchamia pytest, buduje wheel/sdist, odpala `scripts/smoke_e2e.py` z wirtualnego srodowiska. Upload na TestPyPI swiadomie pozostawiony jako TODO.
-
-### Skrypty spoza archive/
-
-- Placeholdery kierujace do archive/tests/helpers (`bench_backends.py`, `build_dataset.py`, `calibrate_kinetics.py`, `calibration_report.py`, `check_imports_verbose.py`, `check_ml_imports.py`, `compare_shot.py`, `debug_import_app.py`) zostaly usuniete z kanonicznego `scripts/`. Referencyjne kopie siedza w `scripts/archive/` + `tests/helpers/`.
-- Aktywne debug harnessy: `debug_import_logs_run.py`, `run_train_main_debug.py`, `_debug_check_yaml.py`, `inspect_train_baseline.py`. Wszystkie trafiaja do `tmp_debug_*` katalogow – docelowo przeniesc do `tests/helpers/` z opisem w `docs/ML_LOGGING.md`.
-- Narzedzia uzytkowe: `plot_kinetics.py` (wykres alpha(t)), `service_example.py` (FastAPI wrapper), `smoke_e2e.py` (instalacyjny smoke). Te pozostaja i warto dodac do README sekcji „Developer tools”.
-- Polityka bledow ML opisana w `docs/ML_LOGGING.md` → kazde wywolanie ML (CLI/API) ustawia `ml_status`, a `train_baseline` rzuca kontrolowane `MLDependencyError`/`MLInputError`.
-- Nowy tester scenariuszy ML: `python scripts/ml_status_tester.py --case {ok|missing-models|missing-extras}` (pokryty testami `tests/test_ml_status_tester.py`).
-
-### Szybkie follow-upy
-
-1. W CI dodac lekki job `lint` (bez macierzy) uruchamiajacy ruff/black/markdownlint, a job `test` mozna ograniczyc do 3 wersji Pythona (np. 3.11/3.12/3.13) + extras switch, zostawiajac pelna macierz tylko nocnie.
-2. W `scripts/README` (lub `docs/STRUCTURE.md`) opisac, ktore katalogi zawieraja aktywne narzedzia vs archiwa.
-3. Po przeniesieniu debug harnessow do `tests/helpers/`, katalog `tmp_debug_*` mozna generowac on-demand w README, by utrzymac repo czyste.
-
-## 7. Plan lint/format baseline
-
-### Proponowane narzedzia
-
-- Ruff – lint + auto-fix importow (juz w `project.optional-dependencies.dev`, brak konfiguracji).
-- Black – format kodu Python, docelowo ta sama dlugosc linii co Ruff.
-- markdownlint-cli2 – prosty check Markdown (Node) lub `mdformat` jako alternatywa Python.
-
-### Sekcje do dodania w `pyproject.toml`
-
-```toml
-[tool.ruff]
-line-length = 100
-target-version = "py311"
-extend-select = ["E", "F", "I", "B", "UP", "C4"]
-ignore = ["E203", "E266"]
-
-[tool.black]
-line-length = 100
-target-version = ["py311"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
-"scripts/**" = ["INP001"]
-```
-
-### Integracja CI
-
-- Dodac job `lint` do `ci.yml` (np. Python 3.11, bez macierzy): `pip install .[dev] markdownlint-cli2`, potem `ruff check .`, `black --check .`, `markdownlint-cli2 "**/*.md" --config .markdownlint.jsonc`.
-- Opcjonalnie walidowac `pyproject.toml` `python -m compileall pyproject.toml` lub `pipx run check-toml`.
-- Dla lokalnych devow dopisac sekcje w README/DEV dashboard z poleceniem `pip install .[dev]` + `pre-commit` hook z ruff/black/markdownlint (opcjonalnie).
-
-### Pliki konfiguracyjne Markdown
-
-- Utworzyc `.markdownlint.jsonc` (lub `markdownlint-cli2.yaml`) z zasadami: `MD013` (line length) wylaczone globalnie, `MD024` relaxed, `MD033` allow raw HTML.
-- Alternatywnie, jezeli Node toolchain nie jest pozadany, wdrozyc `mdformat . --check` jako fallback i w README opisac roznice.
 

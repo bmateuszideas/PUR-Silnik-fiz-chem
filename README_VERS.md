@@ -3,12 +3,6 @@
 Data: 2025-12-01  
 Zakres: kontrola spojnosci repo z `todo1.md` (szczegolnie §13) oraz weryfikacja tresci `readme.md`.
 
-## 2025-12-15
-- Release gating TODO4: README i `docs/ML_LOGGING.md` dokumentuja tester `ml_status` oraz checkliste release; `todo4.md` ma status „Ready to tag”.
-- CI: workflow `.github/workflows/ci.yml` posiada job `lint` (ruff/black/markdownlint-cli2) oraz zredukowana macierz testowa (Python 3.11/3.12/3.14 z przełącznikiem extras `[ml]`); `release.yml` nadal wykonuje smoke na wheelu.
-- Tester scenariuszy ML (`scripts/ml_status_tester.py`) i testy `tests/test_ml_status_tester.py` uznane za wymagane przed tagiem `v1.0.0` (scenariusze `ok`, `missing-models`, `missing-extras`).
-- Release checklist (ulotna): `pytest -q`, `python scripts/smoke_e2e.py`, `python scripts/ml_status_tester.py --case {ok, missing-models, missing-extras}`, aktualizacja `README_VERS.md` i `todo4.md`, tag `v1.0.0`, obserwacja workflow `release.yml`.
-
 ## 2025-12-02
 - Dodano realne testy (`test_core_simulation.py`, `test_optimizer.py`) i usunieto placeholdery.
 - Standaryzowano strukture dokumentacji (root `standards.md`, `docs/CALIBRATION.md`, `docs/ML_LOGGING.md`).
@@ -28,12 +22,6 @@ Zakres: kontrola spojnosci repo z `todo1.md` (szczegolnie §13) oraz weryfikacja
 - Sprawdzono spojnosc sekcji 10–15 `readme.md` z aktualna struktura (`docs/STRUCTURE.md`) oraz plikami CLI/testow i zaktualizowano referencje.
 - Status faz: MVP 0D (fazy 1–3: core z cisnieniem/vent, oknem demold i diagnostyka) oraz optimizer + CLI Typer sa dostarczone; dalsze prace (kalibracja danych, rozszerzenia ML/raportow/CI) sa kontynuowane w TODO2.
 - Uporzadkowano TODO1: sekcja 13 traktowana jako domknieta; utrzymanie dokumentacji/standardow prowadzone w istniejacych plikach.
-
-## 2025-12-03
-- Spieta polityka `ml_status` (kody + opis) w CLI/API, wraz z dokumentacja w README i `docs/ML_LOGGING.md`.
-- Dodano tester scenariuszy ML (`scripts/ml_status_tester.py`) oraz testy systemowe `tests/test_ml_status_tester.py` pokrywajace przypadki `ok`/`missing-models`/`missing-extras`.
-- Posprzatano katalog `scripts/` (usunieto stuby, pozostaly aktywne narzedzia) i przygotowano `todo4.md` z planem releasu 1.0.0.
-- Workflow CI zyskal job `lint` (ruff/black/markdownlint), repo ma konfiguracje `.markdownlint.jsonc` i instrukcje w dashboardzie.
 
 ## 1. Stan TODO1
 - §1-13 oznaczone jako ukonczone i potwierdzone w repo (`docs/MODEL_OVERVIEW.md`, `docs/STRUCTURE.md`, `src/pur_mold_twin/core`, `docs/CALIBRATION.md`, `docs/ML_LOGGING.md`).

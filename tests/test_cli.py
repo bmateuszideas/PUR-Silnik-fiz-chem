@@ -7,9 +7,14 @@ from typer.testing import CliRunner
 
 sys.path.append(str(Path(".") / "src"))
 
-# For unit tests in this workspace enable CLI deps path — project contains
-# lightweight shims for optional deps to allow tests to run in CI-less env.
-CLI_DEPS_AVAILABLE = True
+try:
+    import pydantic  # noqa: F401
+    import ruamel.yaml  # noqa: F401
+    import matplotlib  # noqa: F401
+
+    CLI_DEPS_AVAILABLE = True
+except ModuleNotFoundError:  # pragma: no cover
+    CLI_DEPS_AVAILABLE = False
 
 from pur_mold_twin.cli.main import app
 
