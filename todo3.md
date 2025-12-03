@@ -211,9 +211,9 @@ Przekształcenie obecnego MVP w **dojrzały, skalowalny, produkcyjny silnik pred
 
 - [x] **(26)** Dodać moduł "service wrapper" `service/api.py` mapujący JSON <-> modele domenowe (`APIService`).  
 
-- [ ] **(27)** Utworzyć dopieszczony serwis FastAPI/Flask → `scripts/service_example.py`:  
-      - **JEST** referencyjny serwis FastAPI,  
-      - DO DOPIESZCZENIA: konfiguracja przez env, pełny CORS, dodatkowe logowanie i przykładowe requesty w docs.  
+- [x] **(27)** Utworzyć dopieszczony serwis FastAPI/Flask → `scripts/service_example.py`:  
+      - **ZROBIONE** referencyjny serwis FastAPI z pełną konfiguracją,  
+      - **ZROBIONE** env config (PORT, HOST, CORS, LOG_LEVEL), structured logging, health checks, przykłady w docs/API_SERVICE_EXAMPLES.md.  
 
 - [x] **(28)** Rozszerzyć CLI o tryb dla operatora (preset `--mode operator`) z uproszczonym widokiem KPI.  
 
@@ -251,7 +251,7 @@ Przekształcenie obecnego MVP w **dojrzały, skalowalny, produkcyjny silnik pred
 
 - [x] **(36)** Rozszerzyć `CALIBRATION.md` o sekcję: drift, rekomendacje re-kalibracji, wpięcie w harmonogram.  
 
-- [ ] **(37)** Dodać pełny test E2E pipeline:  
+- [x] **(37)** Dodać pełny test E2E pipeline:  
       - syntetyczne logi → `import-logs` → ETL → features → `train-ml` → `run-sim --with-ml` → `check-drift`,  
       - asercje na spójność plików, metryk i struktur danych.  
 
@@ -294,7 +294,7 @@ Statusy:
 | 24 | Testy regresyjne ML (syntetyczny dataset → train → metryki)                                                          | ☑ Zrobione           | Wysoki    | 6–8 h            | `tests/test_ml_training.py` + pokrewne                                                         |
 | 25 | Specyfikacja REST API → `docs/API_REST_SPEC.md`                                                                      | ☑ Zrobione           | Wysoki    | 4–6 h            | `/simulate`, `/optimize`, `/ml/predict`, `/health`, `/version`                                 |
 | 26 | Service wrapper + walidacja JSON → `service/api.py`                                                                  | ☑ Zrobione           | Wysoki    | 8–10 h           | `APIService` mapuje JSON -> modele                                                             |
-| 27 | Referencyjny serwis FastAPI z OpenAPI + CORS                                                                         | 🟡 W toku            | Wysoki    | 10–14 h          | serwis działa, ale wymaga dopracowania konfiguracji/CORS/logów                                 |
+| 27 | Referencyjny serwis FastAPI z OpenAPI + CORS                                                                         | ☑ Zrobione           | Wysoki    | 10–14 h          | env config, structured logging, health checks, comprehensive docs                              |
 | 28 | Tryb operatora w CLI (`--mode operator`) z dedykowanym widokiem                                                      | ☑ Zrobione           | Średni    | 6–8 h            | operator-friendly widok KPI                                                                    |
 | 29 | Aktualizacja README – trzy tryby użycia (lib / CLI / API)                                                            | ☑ Zrobione           | Średni    | 2–3 h            | opisane trzy tryby użycia                                                                      |
 | 30 | Uzupełnić URL-e w `pyproject.toml` + sekcja Versioning w `README_VERS.md`                                            | ☑ Zrobione           | Wysoki    | 2 h              | linki do repo/doc + polityka wersjonowania                                                     |
@@ -304,7 +304,7 @@ Statusy:
 | 34 | Monitoring driftu danych ML → `ml/drift.py` + raporty                                                                | ☑ Zrobione           | Średni    | 10–14 h          | klasyfikacja OK/WARNING/ALERT                                                                  |
 | 35 | Komenda `check-drift` + kody wyjścia OK/WARNING/ALERT                                                                | ☑ Zrobione           | Średni    | 6–8 h            | CLI z kodami 0/1/2                                                                             |
 | 36 | Sekcja w `CALIBRATION.md` o drifcie i cyklicznej re-kalibracji                                                       | ☑ Zrobione           | Średni    | 2–3 h            | opis integracji driftu z harmonogramem                                                         |
-| 37 | Full pipeline E2E test (logi → ETL → ML → symulacja → drift)                                                         | ☐ Do zrobienia       | Wysoki    | 10–12 h          | święty graal testów, jeszcze nie zaimplementowany                                              |
+| 37 | Full pipeline E2E test (logi → ETL → ML → symulacja → drift)                                                         | ☑ Zrobione           | Wysoki    | 10–12 h          | test_full_pipeline_e2e.py – 5-stopniowy test E2E kompletnego workflow                        |
 
 ---
 
