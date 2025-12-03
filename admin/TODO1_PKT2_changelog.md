@@ -15,3 +15,8 @@ Historia zmian wykonanych przez Copylota w ramach sekcji 2 `todo1.md`.
 - Dodano metodę `MaterialSystem.validate_required_fields()` do sygnalizowania brakujących pól wejściowych.
 - Dopisano komentarze w `configs/systems/jr_purtec_catalog.yaml` oraz wskazówki w `configs/scenarios/use_case_1.yaml` o wymaganych danych i jednostkach.
 - Utworzono `configs/README.md` z listą pól wymaganych/opcjonalnych oraz minimalnymi i pełnymi przykładami konfiguracji; link w `docs/STRUCTURE.md`.
+
+## 2025-12-03
+- Ujednolicono komentarze jednostek i placeholderów w `configs/systems/jr_purtec_catalog.yaml`, zaznaczając brakujące dane TDS i konieczność pomiarów.
+- Dodano krótkie opisy jednostek w `configs/scenarios/use_case_1.yaml` oraz progach jakości w `configs/quality/default.yaml` dla spójności konfiguracji.
+- Uporządkowano format pliku testowego `tests/fixtures/use_case_1_output.json` (znacznik końca pliku).

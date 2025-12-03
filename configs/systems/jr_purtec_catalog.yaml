@@ -8,30 +8,29 @@ description: "BASF Elastoflex W 5165/149 – moulded flexible foam (seat cushion
 
 polyol:
   name: "Elastoflex W 5165/149 - Polyol (A-component)"
-  oh_number_mgKOH_per_g: null
-  functionality: null
+  oh_number_mgKOH_per_g: null  # Not listed in the TDS; add lab result before calibration.
+  functionality: null          # Missing from supplier sheet; requires confirmation.
   density_kg_per_m3: 1020
-  viscosity_mPa_s: null
-  water_fraction: null
-  pentane_fraction: null
-  # OH number and water/pentane fractions not listed in the TDS; keep placeholders until lab data is added.
+  viscosity_mPa_s: null        # Viscosity not specified; measure at reference temperature.
+  water_fraction: null         # Water content absent in TDS; fill in after analysis.
+  pentane_fraction: null       # No physical blowing agent listed; confirm with supplier.
   cream_time_s: 11
-  gel_time_s: null
+  gel_time_s: null             # Gel time not provided in TDS.
   rise_time_s: 80
-  tack_free_time_s: null
+  tack_free_time_s: null       # Tack-free time not provided in TDS.
   metadata:
     documents:
       - "Elastoflex_W_5165-149_TDS_BASF_2017-06-06"
     reference_temperature_C: 23
     notes:
-      - "Czasy reakcji z cup test przy 23C."
-      - "Brak jawnego OH-number, water/pentane w TDS."
-      - "System 2K do seat cushions/backrests."
+      - "Reaction times from cup test at 23 °C."
+      - "OH number, water, and pentane content missing in TDS; placeholders kept until lab data arrives."
+      - "Two-component system for seat cushions/backrests."
 
 isocyanate:
   name: "ISO 135/144 - Isocyanate (B-component for Elastoflex W 5165/149)"
   nco_percent: 27.3
-  functionality: null
+  functionality: null      # Not specified in supplier sheet.
   density_kg_per_m3: 1160
   viscosity_mPa_s: 180
   metadata:
@@ -81,28 +80,28 @@ description: "BASF Elastoflex W 5165/150 – automotive seat foam"
 
 polyol:
   name: "Elastoflex W 5165/150 - Polyol (A-component)"
-  oh_number_mgKOH_per_g: null
-  functionality: null
+  oh_number_mgKOH_per_g: null  # Not listed in the TDS; add lab result before calibration.
+  functionality: null          # Missing from supplier sheet; requires confirmation.
   density_kg_per_m3: 1023
   viscosity_mPa_s: 1150
-  water_fraction: null
-  pentane_fraction: null
+  water_fraction: null         # Water content absent in TDS; fill in after analysis.
+  pentane_fraction: null       # No physical blowing agent listed; confirm with supplier.
   cream_time_s: 14
-  gel_time_s: null
+  gel_time_s: null             # Gel time not provided in TDS.
   rise_time_s: 89
-  tack_free_time_s: null
+  tack_free_time_s: null       # Tack-free time not provided in TDS.
   metadata:
     documents:
       - "Elastoflex_W_5165-150_TDS_BASF_2019-09-17"
     reference_temperature_C: 23
     notes:
-      - "Cup test, ultrasonic start/rise times przy 23C."
-      - "Brak OH-number, water/pentane w TDS."
+      - "Cup test and ultrasonic start/rise times at 23 °C."
+      - "OH number, water, and pentane content missing in TDS; placeholders kept until lab data arrives."
 
 isocyanate:
   name: "ISO 135/144 - Isocyanate (B-component for Elastoflex W 5165/150)"
   nco_percent: 27.1
-  functionality: null
+  functionality: null      # Not specified in supplier sheet.
   density_kg_per_m3: 1160
   viscosity_mPa_s: 180
   metadata:
@@ -142,16 +141,16 @@ description: "Dekolast 8IF – integral skin foam (steering wheels, saddles, sea
 
 polyol:
   name: "Dekolast 8IF - Component A"
-  oh_number_mgKOH_per_g: null
-  functionality: null
-  density_kg_per_m3: null
-  viscosity_mPa_s: null
-  water_fraction: null
-  pentane_fraction: null
-  cream_time_s: null
-  gel_time_s: null
-  rise_time_s: null
-  tack_free_time_s: null
+  oh_number_mgKOH_per_g: null  # Not reported; request OH number from supplier.
+  functionality: null          # Missing from datasheet; confirm with supplier.
+  density_kg_per_m3: null      # No density data published.
+  viscosity_mPa_s: null        # Viscosity not specified.
+  water_fraction: null         # Water content not disclosed.
+  pentane_fraction: null       # Physical blowing agent not documented.
+  cream_time_s: null           # Reaction times not provided.
+  gel_time_s: null             # Reaction times not provided.
+  rise_time_s: null            # Reaction times not provided.
+  tack_free_time_s: null       # Reaction times not provided.
   metadata:
     documents:
       - "Dekolast_8IF_web_datasheet_OSV"
@@ -166,10 +165,10 @@ polyol:
 
 isocyanate:
   name: "Dekolast 8IF - Component B (isocyanate)"
-  nco_percent: null
-  functionality: null
-  density_kg_per_m3: null
-  viscosity_mPa_s: null
+  nco_percent: null        # Not reported.
+  functionality: null      # Not reported.
+  density_kg_per_m3: null  # Not reported.
+  viscosity_mPa_s: null    # Not reported.
 
 foam_targets:
   rho_free_rise_target: null
@@ -179,9 +178,9 @@ mechanical_targets:
   h_demold_target_shore: null
   h_24h_target_shore: null
 
-metadata:
-  application:
-    description: "Two-component polyurethane integral skin foam for car steering wheels, bicycle saddles, seats, chair arms, air filters."
+  metadata:
+    application:
+      description: "Two-component polyurethane integral skin foam for car steering wheels, bicycle saddles, seats, chair arms, air filters."
     segment:
       - automotive_steering_wheels
       - seating_components
@@ -208,16 +207,16 @@ description: "Fasipol Integral 30/45 – semi-rigid integral skin PU (vehicle pa
 
 polyol:
   name: "Fasipol Integral 30/45 - Component A"
-  oh_number_mgKOH_per_g: null
-  functionality: null
-  density_kg_per_m3: null
-  viscosity_mPa_s: null
-  water_fraction: null
-  pentane_fraction: null
-  cream_time_s: null
-  gel_time_s: null
-  rise_time_s: null
-  tack_free_time_s: null
+  oh_number_mgKOH_per_g: null  # Datasheet does not provide OH number.
+  functionality: null          # Functionality not reported.
+  density_kg_per_m3: null      # Density missing in datasheet.
+  viscosity_mPa_s: null        # Viscosity missing in datasheet.
+  water_fraction: null         # Water content not disclosed.
+  pentane_fraction: null       # Physical blowing agent not documented.
+  cream_time_s: null           # Reaction times not provided.
+  gel_time_s: null             # Reaction times not provided.
+  rise_time_s: null            # Reaction times not provided.
+  tack_free_time_s: null       # Reaction times not provided.
   metadata:
     documents:
       - "Fasipol_Integral_30-45_TDS_2025-05-23"
@@ -225,10 +224,10 @@ polyol:
 
 isocyanate:
   name: "Fasipol Integral 30/45 - Component B (isocyanate)"
-  nco_percent: null
-  functionality: null
-  density_kg_per_m3: null
-  viscosity_mPa_s: null
+  nco_percent: null        # Not reported.
+  functionality: null      # Not reported.
+  density_kg_per_m3: null  # Not reported.
+  viscosity_mPa_s: null    # Not reported.
 
 foam_targets:
   rho_free_rise_target: null
@@ -267,16 +266,16 @@ description: "Fasipol Integral 75/85 – semi-rigid integral skin PU (transport 
 
 polyol:
   name: "Fasipol Integral 75/85 - Component A"
-  oh_number_mgKOH_per_g: null
-  functionality: null
-  density_kg_per_m3: null
-  viscosity_mPa_s: null
-  water_fraction: null
-  pentane_fraction: null
-  cream_time_s: null
-  gel_time_s: null
-  rise_time_s: null
-  tack_free_time_s: null
+  oh_number_mgKOH_per_g: null  # Datasheet does not provide OH number.
+  functionality: null          # Functionality not reported.
+  density_kg_per_m3: null      # Density missing in datasheet.
+  viscosity_mPa_s: null        # Viscosity missing in datasheet.
+  water_fraction: null         # Water content not disclosed.
+  pentane_fraction: null       # Physical blowing agent not documented.
+  cream_time_s: null           # Reaction times not provided.
+  gel_time_s: null             # Reaction times not provided.
+  rise_time_s: null            # Reaction times not provided.
+  tack_free_time_s: null       # Reaction times not provided.
   metadata:
     documents:
       - "Fasipol_Integral_75-85_TDS_2025-05-23"
@@ -284,10 +283,10 @@ polyol:
 
 isocyanate:
   name: "Fasipol Integral 75/85 - Component B (isocyanate)"
-  nco_percent: null
-  functionality: null
-  density_kg_per_m3: null
-  viscosity_mPa_s: null
+  nco_percent: null        # Not reported.
+  functionality: null      # Not reported.
+  density_kg_per_m3: null  # Not reported.
+  viscosity_mPa_s: null    # Not reported.
 
 foam_targets:
   rho_free_rise_target: null
@@ -297,9 +296,9 @@ mechanical_targets:
   h_demold_target_shore: null
   h_24h_target_shore: null
 
-metadata:
-  application:
-    description: "Integral skin semi-rigid polyurethane system (ODP=0) for technical furnishing components and parts for public and private transport vehicles."
+  metadata:
+    application:
+      description: "Integral skin semi-rigid polyurethane system (ODP=0) for technical furnishing components and parts for public and private transport vehicles."
     segment:
       - public_transport_components
       - vehicle_interior_parts
@@ -318,11 +317,11 @@ metadata:
     hardness_shore_D_range:
       - 25
       - 45
-  processing_recommendations:
-    molding_density_range_kg_per_m3:
-      - 300
-      - 500
-    notes: "System przeznaczony do elementów transportowych, lakierowanie w formie, dobra odporność UV/ścieranie."
+    processing_recommendations:
+      molding_density_range_kg_per_m3:
+        - 300
+        - 500
+      notes: "Suitable for transport components; compatible with in-mold coating and offers high UV/abrasion resistance."
   source:
     tds_url: "https://www.fasipol.it/images/Integrale_75-85-ENG.pdf"
 ---

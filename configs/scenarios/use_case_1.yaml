@@ -2,21 +2,21 @@
 system_id: SYSTEM_R1
 
 process:
-  m_polyol: 1.0
-  m_iso: 1.05
-  m_additives: 0.0
-  nco_oh_index: 1.05
-  T_polyol_in_C: 25.0
-  T_iso_in_C: 25.0
-  T_mold_init_C: 40.0
-  T_ambient_C: 22.0
-  RH_ambient: 0.5
-  mixing_eff: 0.9
+  m_polyol: 1.0          # polyol mass [kg]
+  m_iso: 1.05            # isocyanate mass [kg]
+  m_additives: 0.0       # auxiliary additives mass [kg]
+  nco_oh_index: 1.05     # target NCO/OH index [-]
+  T_polyol_in_C: 25.0    # polyol inlet temperature [°C]
+  T_iso_in_C: 25.0       # isocyanate inlet temperature [°C]
+  T_mold_init_C: 40.0    # initial mold temperature [°C]
+  T_ambient_C: 22.0      # ambient temperature [°C]
+  RH_ambient: 0.5        # ambient relative humidity [0-1]
+  mixing_eff: 0.9        # mixing efficiency proxy [0-1]
 
 mold:
-  cavity_volume_m3: 0.025
-  mold_surface_area_m2: 0.8
-  mold_mass_kg: 120.0
+  cavity_volume_m3: 0.025      # mold cavity volume [m^3]
+  mold_surface_area_m2: 0.8    # surface area exchanging heat [m^2]
+  mold_mass_kg: 120.0          # mold thermal mass [kg]
 
 quality:
   alpha_demold_min: 0.75
@@ -28,6 +28,6 @@ quality:
   H_24h_min_shore: 55.0
 
 simulation:
-  total_time_s: 600.0
-  time_step_s: 0.5
+  total_time_s: 600.0    # simulation horizon [s]
+  time_step_s: 0.5       # solver step size [s]
   backend: manual
