@@ -27,6 +27,10 @@ except ModuleNotFoundError:  # pragma: no cover
     joblib = None
 
 from .baseline import BaselineModels, build_baseline_models
+from .versioning import (
+    create_model_metadata,
+    update_manifest_for_model,
+)
 
 
 @dataclass
@@ -66,20 +70,61 @@ def _train_models(df: "pd.DataFrame") -> Tuple[BaselineModels, TrainingReport]:
     return models, report
 
 
-def _save_models(models: BaselineModels, out_dir: Path) -> Dict[str, str]:
+def _save_models(models: BaselineModels, out_dir: Path, feature_names: list[str], metrics: Dict[str, float]) -> Dict[str, str]:
+    """
+    Save models to disk and update manifest with version metadata.
+    
+    Args:
+        models: Trained models
+        out_dir: Output directory for model files
+        feature_names: List of feature names used in training
+        metrics: Training metrics to store in manifest
+    
+    Returns:
+        Dictionary mapping model type to file path
+    """
     if joblib is None:
         raise ImportError("joblib is required to save ML models; install with pur-mold-twin[ml]")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     paths: Dict[str, str] = {}
+    
+    # Defect risk regressor
     if models.defect_risk_regressor is not None:
-        path = out_dir / "defect_risk.pkl"
+        model_type = "defect_risk"
+        path = out_dir / f"{model_type}.pkl"
         joblib.dump(models.defect_risk_regressor, path)
-        paths["defect_risk"] = str(path)
+        paths[model_type] = str(path)
+        
+        # Update manifest
+        metadata = create_model_metadata(
+            model_type=model_type,
+            version="1.0.0",  # TODO: increment based on existing manifest
+            metrics={k: v for k, v in metrics.items() if k.startswith("mae")},
+            features_used=feature_names,
+            framework="sklearn",
+            notes="Baseline gradient boosting regressor",
+        )
+        update_manifest_for_model(model_type, metadata, out_dir)
+    
+    # Defect classifier
     if models.defect_classifier is not None:
-        path = out_dir / "defect_classifier.pkl"
+        model_type = "defect_classifier"
+        path = out_dir / f"{model_type}.pkl"
         joblib.dump(models.defect_classifier, path)
-        paths["defect_classifier"] = str(path)
+        paths[model_type] = str(path)
+        
+        # Update manifest
+        metadata = create_model_metadata(
+            model_type=model_type,
+            version="1.0.0",
+            metrics={k: v for k, v in metrics.items() if k.startswith("f1")},
+            features_used=feature_names,
+            framework="sklearn",
+            notes="Baseline random forest classifier",
+        )
+        update_manifest_for_model(model_type, metadata, out_dir)
+    
     return paths
 
 
@@ -122,7 +167,17 @@ def main(argv: list[str] | None = None) -> None:
         df = pd.read_parquet(args.features)
 
     models, report = _train_models(df)
-    model_paths = _save_models(models, args.models_dir)
+    
+    # Collect feature names and metrics for manifest
+    X = df.drop(columns=["defect_risk", "any_defect"], errors="ignore")
+    feature_names = list(X.columns)
+    metrics_dict = {}
+    if report.mae_defect_risk is not None:
+        metrics_dict["mae_defect_risk"] = report.mae_defect_risk
+    if report.f1_any_defect is not None:
+        metrics_dict["f1_any_defect"] = report.f1_any_defect
+    
+    model_paths = _save_models(models, args.models_dir, feature_names, metrics_dict)
     _write_metrics_report(report, model_paths, args.metrics_path)
 
     # Simple JSON payload on stdout for CLI usage / tests
