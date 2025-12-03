@@ -8,5 +8,5 @@
 
 ## Model artifacts
 
-- **defect_risk**: `/tmp/pytest-of-vscode/pytest-8/test_versioning_feature_compat0/models/defect_risk.pkl`
-- **defect_classifier**: `/tmp/pytest-of-vscode/pytest-8/test_versioning_feature_compat0/models/defect_classifier.pkl`
+- **defect_risk**: `/tmp/pytest-of-vscode/pytest-23/test_versioning_feature_compat0/models/defect_risk.pkl`
+- **defect_classifier**: `/tmp/pytest-of-vscode/pytest-23/test_versioning_feature_compat0/models/defect_classifier.pkl`
