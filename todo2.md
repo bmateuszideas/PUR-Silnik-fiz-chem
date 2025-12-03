@@ -114,7 +114,7 @@ Druga lista zadan po domknieciu TODO1. Skupia sie na modularizacji core, docelow
 
 - [x] Uporzadkowac `pyproject.toml` / konfiguracje dependency (`numpy`, `scipy`, `pydantic`, `pint`, `ruamel.yaml`, `typer`, `pytest`, opcjonalne ML); odnotowac to w `py_lib.md`. -> `pyproject.toml`, `py_lib.md`
 - [x] Dodac entry-point dla CLI (`pur-mold-twin`) w packagingu. -> `pyproject.toml`, `src/pur_mold_twin/cli/main.py`
-- [x] Skonfigurowac proste CI (np. GitHub Actions) odpalajace `pytest` + ewentualnie mypy/ruff/black. -> `.github/workflows/*`
+- [ ] Skonfigurowac proste CI (np. GitHub Actions) odpalajace `pytest` + ewentualnie mypy/ruff/black. -> `.github/workflows/*` (brak workflow w repo)
 - [x] Zaktualizowac `standards.md` o zasady dot. CLI, packagingu, CI (wersjonowanie, naming) oraz sprawdzic zgodnosc nowych modulow (CLI, ETL). -> `standards.md`, `README_VERS.md`
 - [x] Aktualizacja `README.md`: instrukcja CLI (`run-sim`, `optimize`, flagi, konfiguracje) oraz finalny przeglad spojnosci `docs/` po zakonczeniu Fazy 2. -> `README.md`, `docs/*`
 - [x] Aktualizacja `py_lib.md`: dodanie `typer`, `ruamel.yaml`, `pandas` (ETL) jako zaleznosci produkcyjnych. -> `py_lib.md`
