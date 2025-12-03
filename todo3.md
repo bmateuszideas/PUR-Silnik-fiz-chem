@@ -16,6 +16,16 @@ Wykonane w tej iteracji (szybkie podsumowanie):
 - Zainstalowano lokalnie `scikit-learn` i `joblib` oraz uruchomiono pełny test-suite; wszystkie testy przeszły (57 passed, 0 skipped po adaptacjach).
 - Drobne poprawki/stuby dla ML (`src/sklearn/metrics.py`, ulepszenia w `src/sklearn/ensemble.py`) w celu zapewnienia stabilności testów w różnych środowiskach.
 
+## Aktualizacja 2025-12-03
+
+Drobne, ale istotne zmiany infrastrukturalne i dokumentacyjne:
+
+- **Codecov:** dodano krok wysyłki raportu pokrycia do Codecov w `./.github/workflows/ci.yml` (akcja `codecov/codecov-action@v4`). Jeśli repo jest prywatne, dodaj sekret `CODECOV_TOKEN` w ustawieniach repozytorium.
+- **Dokumentacja ML:** rozszerzono `docs/ML_EXTRAS.md` o opis nowych flag CLI `--model-version` i `--seed` oraz schemat pliku `models/manifest.json` (pola: `version`, `created`, `git_sha`, `requirements_hash`, `sha256`, `training_seed`, `dataset_fingerprint`).
+- **Wynik testów (lokalnie):** po ostatnich poprawkach uruchomiłem pełny test-suite lokalnie — wynik: **65 passed, 0 failed, 0 skipped** (są niewielkie ostrzeżenia deprecacyjne).
+
+Te zmiany kończą ostatnie zadania operacyjne z listy dotyczące CI i dokumentacji ML.
+
 Te zmiany poprawiły stabilność testów integracyjnych i ML oraz usunęły blokery kolekcji/testów. Pozostałe zadania związane z 1D, wersjonowaniem modeli i finalnym E2E pozostają do domknięcia zgodnie z planem.
 
 ## Aktualizacja 2025-12-02 (dodatkowe)
@@ -98,173 +108,10 @@ Przekształcenie obecnego MVP w **dojrzały, skalowalny, produkcyjny silnik pred
 
 ---
 
-## Blok 1 – Backend ODE + SUNDIALS + JAX + benchmarki (zadania 4–8)
+## Załącznik A – Golden Path
 
-**Zakres:** modularne backendy ODE, alternatywne solvery, wydajność.  
-**Status bloku:** ✔ DOMKNIĘTY (wersja praktyczna)
-
-- [x] **(4)** Wyekstrahować wybór backendu ODE do dedykowanego modułu  
-      `src/pur_mold_twin/core/ode_backends.py` z jasno opisanym interfejsem  
-      `integrate_system(ctx, config) -> Trajectory` oraz dokumentacją architektury backendów.  
-      → `core/simulation.py`, `core/ode_backends.py`, `docs/MODEL_OVERVIEW.md`
-
-- [x] **(5)** Dodać kompletne grupy zależności extras `[sundials]` i `[jax]` w `pyproject.toml` zgodnie z `py_lib.md`,  
-      z opisem przypadków użycia, ograniczeń i wymagań środowiskowych.  
-      → `pyproject.toml`, `py_lib.md`
-
-- [x] **(6)** Zaimplementować pełny backend SUNDIALS (`backend="sundials"`) z:  
-      - konfiguracją tolerancji i ustawień solvera,  
-      - walidacją wejścia,  
-      - czytelną diagnostyką przy braku zależności lub błędach numerycznych.  
-      → `core/ode_backends.py`, `core/types.py`, `core/simulation.py`
-
-- [x] **(7)** Stworzyć kompleksowy pakiet benchmarków backendów (`manual` / `solve_ivp` / `sundials`) z:  
-      - pomiarem czasu na wielu scenariuszach,  
-      - porównaniem dokładności (normy błędu względem referencji),  
-      - raportem w `docs/PERF_BACKENDS.md` (tabele + wykresy).  
-      → `scripts/bench_backends.py`, `docs/PERF_BACKENDS.md`
-
-- [x] **(8)** Przygotować szkielet backendu JAX (`backend="jax"`) z:  
-      - strukturami konfiguracji,  
-      - testami jednostkowymi API backendu,  
-      - integracją z `SimulationConfig` i dokumentacją użycia.  
-      → `core/ode_backends.py`, `core/types.py`, `py_lib.md`
-
----
-
-## Blok 2 – Fizyka rozszerzona / pseudo-1D (zadania 9–13)
-
-**Zakres:** przygotowanie i pierwsze wdrożenie modelu 1D.  
-**Status bloku:** ✔ DOMKNIĘTY (rdzeń i testy 1D wdrożone)
-
-- [x] **(9)** Spisać rozbudowane wymagania dla modelu 1D w `docs/MODEL_1D_SPEC.md`.
-
-- [x] **(10)** Rozszerzyć `SimulationConfig` o pole `dimension` (`"0d"`, `"1d_experimental"`) i zapewnić pełną zgodność w:  
-      - core (wybór ścieżki obliczeń),  
-      - CLI,  
-      - raportowaniu,  
-      - przyszłym API.  
-      → `core/types.py`, `core/simulation.py`, `docs/MODEL_OVERVIEW.md`
-
-- [x] **(11)** Zaimplementować pseudo-1D w `core/simulation_1d.py`:
-      - **jest** wersja działająca (wielowarstwowy model z zapisem profili przestrzennych),
-      - dalsza optymalizacja przewodnictwa i kalibracja może być kontynuowana w kolejnych iteracjach,
-      - integracja z `SimulationResult` (pola `T_layers_K`, `alpha_layers`, `phi_layers`).
-      → `core/simulation_1d.py`, `core/simulation.py`
-
-- [x] **(12)** Dodać testy regresyjne i walidacyjne dla 1D:
-      - dodano `tests/test_core_simulation_1d.py` z przypadkami redukcji 1D→0D, monotoniczności i sprawdzeniem kształtu profili,
-      - dalsze rozszerzenia testów (szczególne przypadki materiałowe) mogą być dodane jako oddzielne testy.
-
-- [x] **(13)** Rozszerzyć `docs/MODEL_OVERVIEW.md` o sekcję  
-      **"Experimental 1D – limitations & roadmap"**.
-
----
-
-## Blok 3 – Integracja z logami z hali (SQL, ETL, import-logs) (zadania 14–18)
-
-**Zakres:** zasilanie systemu realnymi danymi, nie tylko lokalnymi plikami.  
-**Status bloku:** ✔ DOMKNIĘTY
-
-- [x] **(14)** Zdefiniować rozbudowany interfejs źródeł danych `ProcessLogSource` w `data/interfaces.py`.  
-
-- [x] **(15)** Dodać connector SQL (PostgreSQL/MySQL / SQLite) z konfiguracją YAML i mapowaniem na `LogBundle`.  
-
-- [x] **(16)** Rozbudować `data/etl.py`, aby:  
-      - obsługiwał wiele źródeł,  
-      - budował `ProcessConditions` bezpośrednio z `ProcessLogSource`,  
-      - logował braki i niespójności.
-
-- [x] **(17)** Dodać komendę CLI `import-logs`, która pobiera logi z data source, zapisuje w `data/raw/...` i generuje raport.  
-
-- [x] **(18)** Przygotować test E2E integracji danych z wykorzystaniem SQLite + sample logu.  
-
----
-
-## Blok 4 – ML 2.0: train-ml, inference, run-sim --with-ml (zadania 19–24)
-
-**Zakres:** pełen cykl ML – trenowanie, inference, integracja z raportami.  
-**Status bloku:** 🟡 PRAWIE GOTOWE (22 wymaga dopieszczenia wersjonowania)
-
-- [x] **(19)** Zdefiniować formalny kontrakt wyjścia modeli ML w `docs/ML_LOGGING.md`.  
-
-- [x] **(20)** Rozbudować `ml/train_baseline.py`, aby trenował kilka modeli, zapisywał je do `models/*.pkl` i generował raport metryk w `reports/ml/`.  
-
-- [x] **(21)** Dodać komendę CLI `train-ml`, która zarządza konfiguracją runów i zapisuje raport (metryki + metadata, git hash).  
-
-- [x] **(22)** Dodać moduł inference `ml/inference.py` z:  
-      - **ZROBIONE** lazy-loading modeli i `attach_ml_predictions(...)`,  
-      - **ZROBIONE** pełne wersjonowanie modeli (models/manifest.json, metadata w wynikach, git hash tracking).  
-
-- [x] **(23)** Rozszerzyć CLI `run-sim` o flagę `--with-ml` i sekcję “ML predictions” w raportach / JSON.  
-
-- [x] **(24)** Dodać zestaw testów regresyjnych ML (syntetyczny dataset → `train-ml` → asercje na modele i raporty).  
-
----
-
-## Blok 5 – API / mikroserwis / UX operatora (zadania 25–29)
-
-**Zakres:** wystawienie silnika na zewnątrz + lepszy UX CLI.  
-**Status bloku:** 🟡 PRAWIE GOTOWE (serwis FastAPI wymaga dopracowania)
-
-- [x] **(25)** Zaprojektować kontrakt REST API i opisać w `docs/API_REST_SPEC.md`.  
-
-- [x] **(26)** Dodać moduł "service wrapper" `service/api.py` mapujący JSON <-> modele domenowe (`APIService`).  
-
-- [x] **(27)** Utworzyć dopieszczony serwis FastAPI/Flask → `scripts/service_example.py`:  
-      - **ZROBIONE** referencyjny serwis FastAPI z pełną konfiguracją,  
-      - **ZROBIONE** env config (PORT, HOST, CORS, LOG_LEVEL), structured logging, health checks, przykłady w docs/API_SERVICE_EXAMPLES.md.  
-
-- [x] **(28)** Rozszerzyć CLI o tryb dla operatora (preset `--mode operator`) z uproszczonym widokiem KPI.  
-
-- [x] **(29)** Zaktualizować `README.md` tak, by jasno pokazywał 3 tryby użycia: biblioteka / CLI / REST API.  
-
----
-
-## Blok 6 – Product hardening, metadane, release workflow (zadania 30–33)
-
-**Zakres:** produktowość, wersjonowanie, release pipeline.  
-**Status bloku:** ✔ PIERWSZA WERSJA GOTOWA
-
-- [x] **(30)** Uzupełnić realne URL-e w `pyproject.toml` (`homepage`, `repository`, `documentation`)  
-      + sekcja "Versioning & releases" w `README_VERS.md`.  
-
-- [x] **(31)** Skonfigurować workflow CI pod release → `.github/workflows/release.yml`:  
-      - build wheel/sdist na tag,  
-      - test “from-install”,  
-      - opcjonalny upload na TestPyPI / internal index (jeszcze jako potencjalne rozszerzenie).  
-
-- [x] **(32)** Dodać smoke-test E2E “from install” (`scripts/smoke_e2e.py`, `tests/test_smoke_e2e.py`).  
-
-- [x] **(33)** Uporządkować niespójności nazw (np. `logging` vs `utils.logging`) oraz opisać zasady w `standards.md`.  
-
----
-
-## Blok 7 – Observability, drift i długoterminowa jakość (zadania 34–37)
-
-**Zakres:** długoterminowa jakość, monitoring, pełny end-to-end.  
-**Status bloku:** 🟡 DRIFT JEST, FULL E2E JESZCZE NIE
-
-- [x] **(34)** Dodać moduł monitorowania driftu danych `ml/drift.py` (statystyki, progi, raporty Markdown/HTML).  
-
-- [x] **(35)** Dodać komendę CLI `check-drift` (przyjmuje baseline i current features, zwraca kody OK/WARNING/ALERT).  
-
-- [x] **(36)** Rozszerzyć `CALIBRATION.md` o sekcję: drift, rekomendacje re-kalibracji, wpięcie w harmonogram.  
-
-- [x] **(37)** Dodać pełny test E2E pipeline:  
-      - syntetyczne logi → `import-logs` → ETL → features → `train-ml` → `run-sim --with-ml` → `check-drift`,  
-      - asercje na spójność plików, metryk i struktur danych.  
-
----
-
-## Tabela zadań TODO3 (operacyjna)
-
-1 wiersz = 1 task w jednym cyklu Copilota.  
-Statusy:
-
-- `☑ Zrobione` – task spełnia minimalne kryteria TODO3, jest zaimplementowany i opisany.  
-- `🟡 W toku` – pierwsza wersja jest, ale TODO3 wymaga jeszcze dopieszczenia.  
-- `☐ Do zrobienia` – brak implementacji / dopiero do ruszenia.
+Sekcja została przeniesiona do `DEV_DASHBOARD_TODO3.md` (rozdział „Golden Path – GP1…GP12”), żeby dashboard pełnił rolę operacyjnego home screena, a `todo3.md` pozostał wyłącznie kroniką statusów.  
+→ Otwórz `DEV_DASHBOARD_TODO3.md`, aby zobaczyć szczegółowe kroki GP1–GP12.
 
 | Lp | Zadanie                                                                                                               | Status               | Priorytet | Szacowany czas   | Uwagi / Linki                                                                                  |
 |----|------------------------------------------------------------------------------------------------------------------------|----------------------|-----------|------------------|------------------------------------------------------------------------------------------------|
@@ -289,12 +136,12 @@ Statusy:
 | 19 | Formalny kontrakt ML output → `docs/ML_LOGGING.md` + diagram przepływu                                               | ☑ Zrobione           | Wysoki    | 3–4 h            | pełny opis pipeline’u ML                                                                       |
 | 20 | Rozbudować `ml/train_baseline.py` (kilka modeli + raporty metryk)                                                    | ☑ Zrobione           | Wysoki    | 12–16 h          | zapis modeli + raport Markdown                                                                 |
 | 21 | Komenda `train-ml` z pełnym raportem Markdown/HTML + git hash                                                        | ☑ Zrobione           | Wysoki    | 8–10 h           | CLI opakowuje training                                                                         |
-| 22 | Moduł inference + lazy-loading + wersjonowanie modeli → `ml/inference.py`                                            | ☑ Zrobione           | Wysoki    | 8–10 h           | manifest.json, metadata w wynikach, feature compatibility                                      |
+| 22 | Moduł inference + lazy-loading + wersjonowanie modeli → `ml/inference.py`                                            | 🟡 W toku            | Wysoki    | 8–10 h           | lazy-loading jest, wersjonowanie modeli wymaga rozbudowy                                       |
 | 23 | `run-sim --with-ml` + sekcja ML w raportach                                                                          | ☑ Zrobione           | Wysoki    | 6–8 h            | ML doklejane do JSON/raportów                                                                  |
 | 24 | Testy regresyjne ML (syntetyczny dataset → train → metryki)                                                          | ☑ Zrobione           | Wysoki    | 6–8 h            | `tests/test_ml_training.py` + pokrewne                                                         |
 | 25 | Specyfikacja REST API → `docs/API_REST_SPEC.md`                                                                      | ☑ Zrobione           | Wysoki    | 4–6 h            | `/simulate`, `/optimize`, `/ml/predict`, `/health`, `/version`                                 |
 | 26 | Service wrapper + walidacja JSON → `service/api.py`                                                                  | ☑ Zrobione           | Wysoki    | 8–10 h           | `APIService` mapuje JSON -> modele                                                             |
-| 27 | Referencyjny serwis FastAPI z OpenAPI + CORS                                                                         | ☑ Zrobione           | Wysoki    | 10–14 h          | env config, structured logging, health checks, comprehensive docs                              |
+| 27 | Referencyjny serwis FastAPI z OpenAPI + CORS                                                                         | 🟡 W toku            | Wysoki    | 10–14 h          | serwis działa, ale wymaga dopracowania konfiguracji/CORS/logów                                 |
 | 28 | Tryb operatora w CLI (`--mode operator`) z dedykowanym widokiem                                                      | ☑ Zrobione           | Średni    | 6–8 h            | operator-friendly widok KPI                                                                    |
 | 29 | Aktualizacja README – trzy tryby użycia (lib / CLI / API)                                                            | ☑ Zrobione           | Średni    | 2–3 h            | opisane trzy tryby użycia                                                                      |
 | 30 | Uzupełnić URL-e w `pyproject.toml` + sekcja Versioning w `README_VERS.md`                                            | ☑ Zrobione           | Wysoki    | 2 h              | linki do repo/doc + polityka wersjonowania                                                     |
@@ -304,7 +151,7 @@ Statusy:
 | 34 | Monitoring driftu danych ML → `ml/drift.py` + raporty                                                                | ☑ Zrobione           | Średni    | 10–14 h          | klasyfikacja OK/WARNING/ALERT                                                                  |
 | 35 | Komenda `check-drift` + kody wyjścia OK/WARNING/ALERT                                                                | ☑ Zrobione           | Średni    | 6–8 h            | CLI z kodami 0/1/2                                                                             |
 | 36 | Sekcja w `CALIBRATION.md` o drifcie i cyklicznej re-kalibracji                                                       | ☑ Zrobione           | Średni    | 2–3 h            | opis integracji driftu z harmonogramem                                                         |
-| 37 | Full pipeline E2E test (logi → ETL → ML → symulacja → drift)                                                         | ☑ Zrobione           | Wysoki    | 10–12 h          | test_full_pipeline_e2e.py – 5-stopniowy test E2E kompletnego workflow                        |
+| 37 | Full pipeline E2E test (logi → ETL → ML → symulacja → drift)                                                         | ☐ Do zrobienia       | Wysoki    | 10–12 h          | święty graal testów, jeszcze nie zaimplementowany                                              |
 
 ---
 
@@ -404,9 +251,9 @@ Opisz w komentarzu, że chcesz równania na ciśnienie/objętość w czasie, a p
 **Copilot tip:**
 Zleć Copilotowi wrapper do `solve_ivp`, który:
 
-* przyjmuje `MoldConfig` + parametry,
-* odpala ODE,
-* zwraca `SimulationResult` (trajektorie + KPI).
+- przyjmuje `MoldConfig` + parametry,
+- odpala ODE,
+- zwraca `SimulationResult` (trajektorie + KPI).
 
 ---
 
@@ -455,11 +302,11 @@ Implementację oprzyj o `sklearn` (np. `RandomForestRegressor` / `GradientBoosti
 **Copilot tip:**
 Skrypt:
 
-* wczytuje dane z pipeline,
-* robi `train_test_split`,
-* trenuje model,
-* liczy RMSE/MAE,
-* zapisuje model `joblib.dump(...)`.
+- wczytuje dane z pipeline,
+- robi `train_test_split`,
+- trenuje model,
+- liczy RMSE/MAE,
+- zapisuje model `joblib.dump(...)`.
 
 ---
 
@@ -492,14 +339,14 @@ Zachowaj wspólny format `SimulationResult`.
 
 **Copilot tip:**
 
-* w CLI użyj `argparse` / Typer (`--mode`, `--config`, `--with-ml`),
-* w FastAPI zaimplementuj `/simulate` i `/ml/predict`,
-* w `README` pokaż przykładowe wywołania i sample JSON.
+- w CLI użyj `argparse` / Typer (`--mode`, `--config`, `--with-ml`),
+- w FastAPI zaimplementuj `/simulate` i `/ml/predict`,
+- w `README` pokaż przykładowe wywołania i sample JSON.
 
 ---
 
 **Użycie w praktyce:**
 
-* Do **planowania fazy 3** – patrz bloki 0–7, tabela zadań i punktacja.
-* Do **odpalenia Copilota jak niewolnika-juniora** – jedź Golden Path GP1–GP12 i odhaczaj kolejne Lp w tabeli.
+- Do **planowania fazy 3** – patrz bloki 0–7, tabela zadań i punktacja.
+- Do **odpalenia Copilota jak niewolnika-juniora** – jedź Golden Path GP1–GP12 i odhaczaj kolejne Lp w tabeli.
   Ta lista jest teraz zsynchronizowana ze stanem kodu – więc jak coś odhaczasz, to ma to sens.

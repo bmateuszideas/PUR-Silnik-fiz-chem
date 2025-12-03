@@ -162,15 +162,20 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
 - CI: `.github/workflows/ci.yml` uruchamia `pytest` (coverage >80% dla `core`); docelowy runtime Python 3.14, w Actions używany kompatybilny runner.
 
 ## 13. ML i logi procesu (TODO §12)
+
 - Szczegoly planu ML/logowania: `docs/ML_LOGGING.md` (format logow, featury, modele i pipeline ETL).
 - Surowe logi trafiaja do `data/ml/` (gitignore), ETL buduje `data/ml/features.parquet` laczac pomiary i wyniki symulacji.
 - CLI `build-features`: `pur-mold-twin build-features --sim out/use_case_1.json --measured logs/sample/ --output data/ml/features.parquet` (przyjmuje katalog logow lub pojedynczy CSV).
 - Modele startowe: `RandomForestRegressor` (`defect_risk`) i `RandomForestClassifier` (etykiety defektow); w przyszlosci komenda `pur-mold-twin ml-train` bedzie wykorzystywala te zasoby.
 - ML jest opcjonalne; zaleznosci instaluje sie jako extras `pur-mold-twin[ml]`, a CLI komunikuje brak modulow ML.
+- Kazde wywolanie ML (CLI/API) dolacza pole `ml_status` z kodem (`ok`, `missing-ml-extras`, `missing-ml-models`, `invalid-ml-input`, `ml-error`).
+- Dla manualnych sanity checkow dostepny jest tester scenariuszy: `python scripts/ml_status_tester.py --case {ok|missing-models|missing-extras}`.
 
 ## 14. CLI Quickstart (`pur-mold-twin`)
+
 - Po instalacji pakietu (patrz `py_lib.md`) dostepna jest aplikacja Typer (`pur-mold-twin`) z komendami `run-sim` i `optimize` oraz dodatkowymi narzedziami (`build-features`, `import-logs`, `train-ml` po TODO3).
 - `run-sim` (tabela KPI na stdout, JSON/CSV lokalnie):
+
   ```bash
   pur-mold-twin run-sim \
       --scenario configs/scenarios/use_case_1.yaml \
@@ -180,8 +185,10 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
       --save-json out/use_case_1.json \
       --export-csv out/use_case_1_profiles.csv
   ```
+
   - Kluczowe flagi: `--scenario/-s`, `--system/-y`, `--quality/-q`, `--systems/-c`, `--output {json|table}`, `--save-json`, `--export-csv`, `--backend`, `--verbose`, `--mode {expert|operator}`, `--with-ml`.
 - `optimize` (random search na scenariuszu referencyjnym):
+
   ```bash
   pur-mold-twin optimize \
       --scenario configs/scenarios/use_case_1.yaml \
@@ -189,6 +196,7 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
       --samples 40 \
       --t-cycle-max 600
   ```
+
   - Flagi: `--samples/-n`, `--seed`, `--t-cycle-max`, `--prefer-lower-pressure`, `--systems`, `--quality`, `--output {json|table}`, `--save-json`, `--export-csv`, `--verbose`.
 - Szczegoly dot. formatow wyjscia oraz przeplywu YAML -> Material DB -> core opisane sa w `docs/USE_CASES.md`. Tryb API/serwisowy opisany jest w `docs/API_REST_SPEC.md` (referencyjny serwis FastAPI w `scripts/service_example.py`).
 
@@ -197,3 +205,10 @@ System PUR sklada sie z komponentu poliolowego (opcjonalnie z pentanem), kompone
 - Zainstaluj zaleznosci developerskie: `python3.14 -m pip install .[dev]` (zawiera `pytest`, `pytest-cov`, linty). Bazowy pakiet instalowany bez extras ma biblioteki CLI (`typer`, `ruamel.yaml`, `pydantic`, `matplotlib`) wymagane do `--report`.
 - Uruchom kluczowe testy regresyjne: `PYTHONPATH=src python3.14 -m pytest tests/test_core_simulation.py tests/test_optimizer.py tests/test_cli.py`.
 - Pelny zestaw wraz z pokryciem: `PYTHONPATH=src python3.14 -m pytest` (ustawienie `PYTHONPATH` nie jest potrzebne po instalacji pakietu poprzez `pip`).
+
+## 16. Release prep (TODO4)
+
+- `todo4.md` opisuje zestaw krokow bramkujacych release 1.0.0 (dokumentacja, lint, tester ML, tagowanie). Traktuj go jako checklist przed wystawieniem tagu `v1.0.0`.
+- Polityka `ml_status` z `docs/ML_LOGGING.md` jest egzekwowana testerem `python scripts/ml_status_tester.py --case {ok|missing-models|missing-extras}`; kazdy scenariusz musi przejsc przed releasem.
+- Workflow `.github/workflows/ci.yml` ma dedykowany job `lint` (ruff, black, markdownlint-cli2) oraz macierz testowa Pythona 3.10–3.14 z opcjonalnymi extras `[ml]`. Utrzymuj konfiguracje `pyproject.toml` i `.markdownlint.jsonc` w synchronizacji z tym jobem.
+- Release checklist: zaktualizuj `README_VERS.md`, odpal `pytest` + `scripts/smoke_e2e.py`, przeprowadz tester ML, a nastepnie utworz tag `v1.0.0` i obserwuj workflow `release.yml` (build wheel + smoke z paczki).

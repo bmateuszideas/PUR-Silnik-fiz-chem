@@ -64,7 +64,6 @@ def _create_sqlite_with_sample_log(db_path: Path) -> None:
         conn.close()
 
 
-@pytest.mark.skip(reason="CLI deps (pydantic/ruamel) and DB not guaranteed in all environments")
 def test_import_logs_and_build_features_e2e(tmp_path: Path) -> None:
     db_path = tmp_path / "logs.sqlite"
     _create_sqlite_with_sample_log(db_path)
