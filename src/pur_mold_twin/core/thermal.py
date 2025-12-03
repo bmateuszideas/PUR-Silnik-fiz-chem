@@ -1,3 +1,5 @@
+"""Thermal and moisture helper functions used by the MVP 0D simulator."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,6 +12,8 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 def initial_core_temperature(process: "ProcessConditions") -> float:
+    """Compute the starting mix temperature using mass-weighted averaging."""
+
     mix_mass = process.m_polyol + process.m_iso
     if mix_mass <= 0:
         return celsius_to_kelvin((process.T_polyol_in_C + process.T_iso_in_C) * 0.5)
@@ -21,6 +25,8 @@ def initial_core_temperature(process: "ProcessConditions") -> float:
 
 
 def liquid_volume(material: "MaterialSystem", process: "ProcessConditions") -> float:
+    """Calculate total liquid volume from polyol, isocyanate, and additives."""
+
     vol_polyol = process.m_polyol / max(material.polyol.density_kg_per_m3, 1e-6)
     vol_iso = process.m_iso / max(material.isocyanate.density_kg_per_m3, 1e-6)
     vol_additives = process.m_additives / max(material.polyol.density_kg_per_m3, 1e-6)
@@ -33,6 +39,8 @@ def initial_density(
     extra_mass: float = 0.0,
     extra_volume: float = 0.0,
 ) -> float:
+    """Determine initial density including optional extra mass/volume terms."""
+
     mass_total = process.total_mass + extra_mass
     volume = liquid_volume(material, process) + extra_volume
     return mass_total / max(volume, 1e-6)
@@ -44,6 +52,8 @@ def compute_water_balance(
     mold: "MoldProperties",
     config: "SimulationConfig",
 ):
+    """Compute effective water balance including humidity-driven contribution."""
+
     from .types import WaterBalance  # local import to avoid circular dependency
 
     base_water = process.m_polyol * material.polyol.water_fraction
@@ -79,6 +89,8 @@ def compute_water_balance(
 
 
 def extra_water_volume_km(water_from_rh_kg: float) -> float:
+    """Convert additional RH-driven water mass to cubic meters."""
+
     if water_from_rh_kg <= 0:
         return 0.0
     return water_from_rh_kg / LIQUID_WATER_DENSITY_KG_PER_M3

@@ -1,10 +1,10 @@
 """
 Helper utilities for reaction kinetics used by the MVP 0D simulator.
 
-Separating these helpers from ``mvp0d.py`` is the first step toward the
-modular structure opisane w TODO2 §1 (wydzielenie logiki Arrheniusa oraz
-kalibracji do osobnego pliku, ktory w przyszlosci wykorzysta zarowno
-backend reczny jak i wariant `solve_ivp`).
+These routines are split out from ``mvp0d.py`` to keep Arrhenius-related
+calculations and reaction-curve calibration isolated from backend-specific
+details. The separation aligns with the modular layout described in TODO2 §1
+and will be reused by both manual and ``solve_ivp`` backends.
 """
 
 from __future__ import annotations

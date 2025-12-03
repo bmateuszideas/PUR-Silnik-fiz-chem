@@ -1,3 +1,5 @@
+"""Hardness and demold window helpers used by the simulator."""
+
 from __future__ import annotations
 
 from typing import List, Optional, Sequence
@@ -6,6 +8,8 @@ from .utils import clamp, interp_series
 
 
 def compute_hardness_profile(alpha: Sequence[float], rho: Sequence[float], config) -> List[float]:
+    """Estimate hardness progression based on conversion and density series."""
+
     density_ref = max(config.hardness_density_ref, 1.0)
     values: List[float] = []
     for alpha_value, rho_value in zip(alpha, rho):
@@ -19,6 +23,8 @@ def compute_hardness_profile(alpha: Sequence[float], rho: Sequence[float], confi
 
 
 def predict_h24(rho_moulded: float, config) -> float:
+    """Predict 24h hardness using moulded density and calibration gains."""
+
     density_ref = max(config.hardness_density_ref, 1.0)
     density_term = max(rho_moulded - density_ref, 0.0) / density_ref
     return (
@@ -37,6 +43,8 @@ def demold_window(
     hardness_profile: Sequence[float],
     quality,
 ) -> tuple[Optional[float], Optional[float], Optional[float]]:
+    """Compute demold window boundaries based on quality targets."""
+
     indices = []
     for idx in range(len(time)):
         if (
@@ -56,6 +64,8 @@ def demold_window(
 
 
 def sample_profile(time: Sequence[float], values: Sequence[float], time_target: Optional[float]) -> float:
+    """Sample a profile at the requested time using linear interpolation."""
+
     if time_target is None:
         return float(values[-1])
     return float(interp_series(time, values, time_target))

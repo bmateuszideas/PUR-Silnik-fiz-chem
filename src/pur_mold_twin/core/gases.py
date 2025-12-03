@@ -1,3 +1,5 @@
+"""Gas-phase helper functions for pressure and venting calculations."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,22 +16,34 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 def initial_pentane_moles(material, process) -> float:
+    """Convert pentane mass fraction to initial moles in the mixture."""
+
     pentane_mass = process.m_polyol * material.polyol.pentane_fraction
     return max(pentane_mass, 0.0) / MOLAR_MASS_PENTANE
 
 
-def initial_air_moles(cavity_volume: float, foam_volume: float, temperature_K: float, config: "SimulationConfig") -> float:
+def initial_air_moles(
+    cavity_volume: float, foam_volume: float, temperature_K: float, config: "SimulationConfig"
+) -> float:
+    """Compute initial air moles in the cavity headspace using the ideal gas law."""
+
     headspace = headspace_volume(config, cavity_volume, foam_volume)
     temp = max(temperature_K, 250.0)
     return config.ambient_pressure_Pa * headspace / (GAS_CONSTANT * temp)
 
 
 def headspace_volume(config: "SimulationConfig", cavity_volume: float, foam_volume: float) -> float:
+    """Calculate available headspace while enforcing a minimum fraction."""
+
     min_headspace = config.min_headspace_fraction * cavity_volume
     return max(cavity_volume - foam_volume, max(min_headspace, 1e-6))
 
 
-def compute_pressures(n_air: float, n_co2: float, n_pentane: float, temperature_K: float, headspace_volume: float) -> tuple[float, float, float, float]:
+def compute_pressures(
+    n_air: float, n_co2: float, n_pentane: float, temperature_K: float, headspace_volume: float
+) -> tuple[float, float, float, float]:
+    """Return individual and total pressures for gas components in the headspace."""
+
     temp = max(temperature_K, 250.0)
     volume = max(headspace_volume, 1e-9)
     p_air = n_air * GAS_CONSTANT * temp / volume
@@ -39,6 +53,8 @@ def compute_pressures(n_air: float, n_co2: float, n_pentane: float, temperature_
 
 
 def vent_effectiveness(alpha: float, fill_ratio: float, vent: "VentProperties", config: "SimulationConfig") -> float:
+    """Estimate vent efficiency as conversion progresses and the cavity fills."""
+
     alpha_term = max(
         0.0,
         1.0 - (alpha / max(vent.alpha_closure, 1e-3)) ** vent.clog_rate,
@@ -51,6 +67,8 @@ def vent_effectiveness(alpha: float, fill_ratio: float, vent: "VentProperties", 
 
 
 def pentane_evap_rate(temperature_K: float, config: "SimulationConfig") -> float:
+    """Empirical pentane evaporation rate scaled by temperature above onset."""
+
     if temperature_K <= config.pentane_evap_onset_K:
         return 0.0
     delta = temperature_K - config.pentane_evap_onset_K
@@ -58,6 +76,7 @@ def pentane_evap_rate(temperature_K: float, config: "SimulationConfig") -> float
 
 
 def pressure_status(p_max_Pa: float, p_max_allowable_bar: float) -> str:
+    """Translate maximum pressure into qualitative safety status."""
     limit_Pa = p_max_allowable_bar * 100_000.0
     if limit_Pa <= 0:
         return "UNKNOWN"

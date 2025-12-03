@@ -1,9 +1,9 @@
 """
 Random/grid search style Process Optimizer for PUR-MOLD-TWIN.
 
-The initial implementation follows TODO1 §9-10 requirements by sampling
-temperatures i demold time, uruchamiając symulacje MVP 0D oraz filtrując je
-przez proste ograniczenia/diagnozy.
+The initial implementation follows TODO1 §9-10 by sampling inlet
+temperatures and demold time, running MVP 0D simulations, and filtering the
+results through quality constraints and diagnostic flags.
 """
 
 from __future__ import annotations

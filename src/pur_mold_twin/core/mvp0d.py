@@ -1,8 +1,9 @@
 """
 MVP 0D simulator wrapper.
 
-Re-exports Pydantic modele z ``core.types`` i deleguje obliczenia do modułu
-``core.simulation`` (manual / solve_ivp).
+The class re-exports Pydantic models from ``core.types`` and delegates
+calculations to ``core.simulation`` (manual backend) or ``core.simulation_1d``
+to keep orchestration separate from numerical details.
 """
 
 from __future__ import annotations

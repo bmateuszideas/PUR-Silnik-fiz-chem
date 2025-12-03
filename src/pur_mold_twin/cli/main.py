@@ -15,7 +15,7 @@ APP_NAME = "pur-mold-twin"
 def _determine_version() -> str:
     try:
         return metadata.version(APP_NAME)
-    except metadata.PackageNotFoundError:  # pragma: no cover - lokalne uruchomienia bez instalacji
+    except metadata.PackageNotFoundError:  # pragma: no cover - local executions without installation
         return "0.0.0+local"
 
 
