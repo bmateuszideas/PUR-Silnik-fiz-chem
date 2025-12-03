@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ml = ["scikit-learn>=1.3", "joblib>=1.3"]
+ml = ["scikit-learn>=1.3"]
 sundials = ["scikits.odes>=2.7"]
 jax = ["jax>=0.4", "diffrax>=0.5"]
 dev = [
