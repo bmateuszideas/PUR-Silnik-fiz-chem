@@ -296,34 +296,34 @@ mechanical_targets:
   h_demold_target_shore: null
   h_24h_target_shore: null
 
-  metadata:
-    application:
-      description: "Integral skin semi-rigid polyurethane system (ODP=0) for technical furnishing components and parts for public and private transport vehicles."
+metadata:
+  application:
+    description: "Integral skin semi-rigid polyurethane system (ODP=0) for technical furnishing components and parts for public and private transport vehicles."
     segment:
       - public_transport_components
       - vehicle_interior_parts
       - JR_Purtec_like_integral_skin
-  foam_properties:
-    density_core_kg_per_m3: 330
-    density_skin_kg_per_m3: 800
-    density_overall_kg_per_m3: 400
-    tensile_strength_core_kg_per_cm2: 24
-    tensile_strength_skin_kg_per_cm2: 95
-    elongation_core_percent: 170
-    elongation_skin_percent: 180
-    hardness_shore_A_range:
-      - 75
-      - 85
-    hardness_shore_D_range:
-      - 25
-      - 45
-    processing_recommendations:
-      molding_density_range_kg_per_m3:
-        - 300
-        - 500
-      notes: "Suitable for transport components; compatible with in-mold coating and offers high UV/abrasion resistance."
-  source:
-    tds_url: "https://www.fasipol.it/images/Integrale_75-85-ENG.pdf"
+foam_properties:
+  density_core_kg_per_m3: 330
+  density_skin_kg_per_m3: 800
+  density_overall_kg_per_m3: 400
+  tensile_strength_core_kg_per_cm2: 24
+  tensile_strength_skin_kg_per_cm2: 95
+  elongation_core_percent: 170
+  elongation_skin_percent: 180
+  hardness_shore_A_range:
+    - 75
+    - 85
+  hardness_shore_D_range:
+    - 25
+    - 45
+processing_recommendations:
+  molding_density_range_kg_per_m3:
+    - 300
+    - 500
+  notes: "Suitable for transport components; compatible with in-mold coating and offers high UV/abrasion resistance."
+source:
+  tds_url: "https://www.fasipol.it/images/Integrale_75-85-ENG.pdf"
 ---
 system_id: SYSTEM_R1
 description: "Rigid reference system without pentane, molded density ~40 kg/m3. Matches Use Case 1."
