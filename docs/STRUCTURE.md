@@ -1,6 +1,6 @@
 # Struktura projektu - PUR-MOLD-TWIN
 
-Szkic katalogow/plikow. Zanim dodasz nowy modul, sprawdz czy pasuje do tej struktury.
+Opis katalogow/plikow referencyjnych. Przed dodaniem nowego modulu sprawdz zgodnosc ze struktura ponizej.
 
 ```
 pur-mold-twin/
@@ -114,12 +114,12 @@ pur-mold-twin/
    - `configs/scenarios/*.yaml`: kompletne scenariusze (`system_id`, `process`, `mold`, `quality`, opcjonalnie `simulation`), ładowane przez `pur_mold_twin.configs.load_process_scenario`.
    - `configs/quality/*.yaml`: stand-alone `QualityTargets` (preset CLI/testów), ładowane przez `load_quality_preset`.
 2. **src/pur_mold_twin/**
-   - Produkcyjny kod trafia tutaj; eksperymenty w osobnych branchach/folderach poza `src`.
+   - Produkcyjny kod znajduje sie w `src`; eksperymenty utrzymujemy w osobnych branchach/folderach poza `src`.
    - Kazdy modul (material_db/core/optimizer/diagnostics/cli/calibration/data/logging/ml/reporting/utils) ma odpowiadajace testy regresyjne w `tests/`.
-   - `core.simulation` skleja backendy solvera (manual/solve_ivp) i korzysta z modulow pomocniczych (`kinetics`, `thermal`, `gases`, `hardness`) – brak bezposrednich importow CLI/optimizer.
+   - `core.simulation` integruje backendy solvera (manual/solve_ivp) i korzysta z modulow pomocniczych (`kinetics`, `thermal`, `gases`, `hardness`) bez bezposrednich zaleznosci od CLI/optimizer.
 3. **docs/**
    - `MODEL_OVERVIEW.md` przechowuje opis rownan/zakresu.
-   - `STRUCTURE.md` aktualizujemy przy zmianie layoutu.
+   - `STRUCTURE.md` aktualizujemy przy zmianie layoutu katalogow lub plikow referencyjnych.
    - Kazdy nowy dokument wplywajacy na workflow agenta musi byc podlinkowany w `agent_instructions.md`.
 4. **tests/**
    - Organizacja wg modulu (`test_core_simulation.py`, `test_optimizer.py`, `test_cli.py`, `test_calibration*.py`, ETL/ML/raporty).
@@ -129,9 +129,9 @@ pur-mold-twin/
    - Przy kazdej zmianie struktury (nowe katalogi, przenosiny) aktualizujemy oba pliki, aby Copilot/Codex znal aktualny layout.
 
 ### Pliki w budowie
-- Rozwojowe paczki TODO2 obejmuja kalibracje datasetow, raportowanie i modele ML; struktura powyzej jest aktualna i wykorzystywana przez CLI/testy regresyjne.
+- Rozwojowe paczki TODO2 obejmuja kalibracje datasetow, raportowanie i modele ML; struktura powyzej jest aktualna i wykorzystywana przez CLI oraz testy regresyjne.
 
 ### Notatki dla Codex/Copilot
 - Przed utworzeniem nowego katalogu upewnij sie, ze pasuje do listy powyzej.
-- Nie wrzucaj danych binarnych/Exceli. Jezeli musisz, dodaj `data/` i `.gitignore`, ale tylko po uzgodnieniu.
+- Nie dodawaj danych binarnych/Exceli. Jezeli musisz je utrzymac, dodaj `data/` i `.gitignore` po uzgodnieniu.
 - Kazdy modul powinien miec krotki docstring i referencje do sekcji TODO, ktora realizuje.

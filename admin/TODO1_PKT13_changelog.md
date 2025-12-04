@@ -7,3 +7,6 @@
 
 ## 2025-12-03
 - Status: OK. Pliki: `todo2.md`. Cel: audyt spojnosci TODO1/TODO2 z aktualnym stanem repo; odznaczono brakujacy krok CI (`.github/workflows/*`).
+- Uporzadkowano jezyk i numeracje sekcji w `readme.md` zgodnie z wymaganiami stylu technicznego.
+- Doprecyzowano ton oraz sformulowania w `docs/STRUCTURE.md`, `README_VERS.md` i narracji `docs/USE_CASES.md` tak, aby uniknac potocznych zwrotow.
+- Zachowano spojnosc miedzy dokumentami (naglowki, sekcje CLI/ML) w odniesieniu do `standards.md`.

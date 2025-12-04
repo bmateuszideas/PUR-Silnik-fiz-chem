@@ -1,8 +1,9 @@
-alpha_demold_min: 0.75
-rho_moulded_min: 35.0
-rho_moulded_max: 45.0
-core_temp_max_C: 90.0
-p_max_allowable_bar: 6.0
-H_demold_min_shore: 40.0
-H_24h_min_shore: 55.0
-defect_risk_max: 0.1
+# Quality thresholds for demold and post-cure (density in kg/m^3, temperature in °C, pressure in bar, hardness in Shore A/D)
+alpha_demold_min: 0.75       # minimum conversion for safe demold [-]
+rho_moulded_min: 35.0        # lower bound on molded density [kg/m^3]
+rho_moulded_max: 45.0        # upper bound on molded density [kg/m^3]
+core_temp_max_C: 90.0        # maximum allowed core temperature at demold [°C]
+p_max_allowable_bar: 6.0     # tooling pressure limit [bar]
+H_demold_min_shore: 40.0     # minimum hardness at demold [Shore A/D as applicable]
+H_24h_min_shore: 55.0        # minimum hardness after 24 h [Shore A/D as applicable]
+defect_risk_max: 0.1         # maximum acceptable defect risk score [-]
